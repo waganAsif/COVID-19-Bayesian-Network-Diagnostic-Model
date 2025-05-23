@@ -167,6 +167,7 @@ show_active_trail(model,
                   trail_to_show=['test_date', 'cough', 'fever', 'sore_throat', 'shortness_of_breath',
                                  'head_ache', 'corona_result', 'age_60_and_above', 'gender', 'test_indication'])
 
+```
 
 ### 4. Evaluate Model Performance
 ```python
