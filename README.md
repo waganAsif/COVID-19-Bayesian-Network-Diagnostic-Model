@@ -422,7 +422,7 @@ accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(mod
 ### Recall: 95.34%
 ### F1 Score: 94.05%
 
-### 4. Draw Model Performance
+###  Draw Model Performance
 ```python
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -472,7 +472,7 @@ plt.show()
 
 ```
 ![Fig5](Fig5.png)
-### 4. Plotting the Confusion Matrix
+###  Plotting the Confusion Matrix
 ```python
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -505,7 +505,104 @@ plt.tight_layout()
 plt.show()
 ```
 ![Fig6](Fig6.png)
-### 4. Evaluate Model Performance
+### Symptom Importance and ROC Curve Analysis using Bayesian Network for COVID-19 Diagnosis
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pgmpy.models import BayesianModel
+from pgmpy.estimators import BayesianEstimator
+from pgmpy.inference import VariableElimination
+from sklearn.metrics import roc_curve, auc
+from sklearn.preprocessing import label_binarize
+
+# Define the complete Bayesian Network structure
+architecture = [
+    ("test_date", "corona_result"),
+    ("cough", "corona_result"),
+    ("fever", "corona_result"),
+    ("sore_throat", "corona_result"),
+    ("shortness_of_breath", "corona_result"),
+    ("head_ache", "corona_result"),
+    ("age_60_and_above", "corona_result"),
+    ("test_indication", "corona_result"),
+    ("gender", "corona_result")
+]
+
+# Create and train the Bayesian Network
+model = BayesianModel(architecture)
+model.fit(updated_df1, estimator=BayesianEstimator, prior_type="BDeu", equivalent_sample_size=10)
+inference = VariableElimination(model)
+
+# Function to compute and plot the importance of each symptom in predicting a positive test result
+def plot_symptom_importance(model, target="corona_result"):
+    importance_scores = {}
+    
+    # Get all the parent nodes (symptoms) that directly influence the target node (corona_result)
+    symptom_nodes = ["cough", "fever", "sore_throat", "shortness_of_breath", "head_ache"]
+    
+    for var in symptom_nodes:
+        prob_positive_given_symptom = inference.query(variables=[target], evidence={var: 1}, show_progress=False).values[1]
+        prob_positive_given_no_symptom = inference.query(variables=[target], evidence={var: 0}, show_progress=False).values[1]
+        importance = prob_positive_given_symptom - prob_positive_given_no_symptom
+        importance_scores[var] = importance
+
+    sorted_scores = {k: v for k, v in sorted(importance_scores.items(), key=lambda item: abs(item[1]), reverse=True)}
+
+    # Plotting the importance
+    plt.figure(figsize=(12, 12), dpi=150)
+    sns.barplot(x=list(sorted_scores.keys()), y=list(sorted_scores.values()), palette="viridis")
+    plt.title("Symptom Importance in Predicting Positive COVID-19 Test", fontsize=24, fontweight='bold', pad=20)
+    plt.xlabel("Symptom", fontsize=20, fontweight='bold')
+    plt.ylabel("Importance Score (Difference in Probability)", fontsize=20, fontweight='bold')
+    plt.grid(True, linestyle='--', linewidth=0.7)
+    plt.tight_layout()
+    plt.savefig("symptom_importance_high_res.png", bbox_inches='tight', dpi=150)
+    plt.show()
+
+# Run and plot the symptom importance
+plot_symptom_importance(model)
+
+# Function to compute and plot ROC curves for each class in a multiclass problem
+def plot_roc_curves(inference, data, target="corona_result"):
+    plt.figure(figsize=(12, 12), dpi=150)
+    
+    actuals = label_binarize(data[target], classes=[0, 1, 2])  # Convert the target to binary format
+    symptom_nodes = ["cough", "fever", "sore_throat", "shortness_of_breath", "head_ache"]
+    markers = ['o', 's', '^']  # Distinct markers for each class
+    line_styles = ['-', '--', '-.']
+    
+    for i, (class_label, marker, style) in enumerate(zip(["Negative", "Positive", "Other"], markers, line_styles)):
+        probs = []
+        for _, row in data.iterrows():
+            evidence = {col: row[col] for col in row.index if col != target}
+            prob = inference.query(variables=[target], evidence=evidence, show_progress=False).values[i]
+            probs.append(prob)
+        
+        fpr, tpr, _ = roc_curve(actuals[:, i], probs)
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label=f'{class_label} (AUC = {roc_auc:.2f})', linestyle=style, marker=marker, markersize=6)
+    
+    plt.plot([0, 1], [0, 1], 'k--', linewidth=1.2)
+    plt.title("ROC Curves for Different Classes of COVID-19 Test Result", fontsize=24, fontweight='bold', pad=20)
+    plt.xlabel("False Positive Rate", fontsize=20, fontweight='bold')
+    plt.ylabel("True Positive Rate", fontsize=20, fontweight='bold')
+    plt.legend(loc="lower right", fontsize=16)
+    plt.grid(True, linestyle='--', linewidth=0.7)
+    plt.tight_layout()
+    plt.savefig("roc_curves_high_res.png", bbox_inches='tight', dpi=150)
+    plt.show()
+
+# Sample a manageable portion of df_test to create the ROC curves
+df_test_sample = df_test.sample(frac=0.001, random_state=42)
+
+# Run and plot the ROC curves
+plot_roc_curves(inference, df_test_sample)
+
+```
+![Fig7](Fig7.png)
+![Fig8](Fig8.png)
+### Evaluate Model Performance
 ```python
 from src.evaluation_metrics import evaluate_model
 
