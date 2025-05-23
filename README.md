@@ -168,6 +168,7 @@ show_active_trail(model,
                                  'head_ache', 'corona_result', 'age_60_and_above', 'gender', 'test_indication'])
 
 ```
+![Fig1](Fig2.png)
 
 ### 4. Evaluate Model Performance
 ```python
