@@ -422,6 +422,56 @@ accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(mod
 ### Recall: 95.34%
 ### F1 Score: 94.05%
 
+### 4. Draw Model Performance
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# Metrics to plot
+metrics = {
+    "Accuracy": accuracy,
+    "Precision": precision,
+    "Recall": recall,
+    "F1 Score": f1
+}
+
+# Set up the figure for the performance metrics
+fig, ax = plt.subplots(figsize=(12, 10), dpi=150)  # High resolution for clear images
+
+# Use a color-blind friendly palette
+colors = sns.color_palette("colorblind")
+
+# Plot the metrics as a bar chart
+sns.barplot(x=list(metrics.keys()), y=list(metrics.values()), palette=colors, ax=ax)
+
+# Customize title and labels for better readability in research papers
+ax.set_title("Model Performance Metrics", fontsize=24, fontweight='bold', pad=20)
+ax.set_ylabel("Percentage (%)", fontsize=18)
+ax.set_xlabel("Metrics", fontsize=18)
+ax.set_ylim(0, 100)  # Set the y-axis from 0 to 100%
+
+# Annotate the bars with the percentage values
+for p in ax.patches:
+    ax.annotate(f'{p.get_height():.2f}%', 
+                (p.get_x() + p.get_width() / 2., p.get_height()), 
+                ha='center', va='center', 
+                xytext=(0, 9), 
+                textcoords='offset points', 
+                fontsize=16, fontweight='bold')
+
+# Improve grid visibility
+ax.grid(True, linestyle='--', alpha=0.6)
+
+# Save the image automatically with high resolution
+output_file = "model_performance_metrics.png"
+fig.savefig(output_file, bbox_inches='tight', dpi=150)
+print(f"Saved as {output_file} (150 DPI, 12x10 inches)")
+
+plt.show()
+
+```
+![Fig5](Fig5.png)
 ### 4. Evaluate Model Performance
 ```python
 from src.evaluation_metrics import evaluate_model
