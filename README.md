@@ -602,109 +602,371 @@ plot_roc_curves(inference, df_test_sample)
 ```
 ![Fig7](Fig7.png)
 ![Fig8](Fig8.png)
-### Evaluate Model Performance
-```python
-from src.evaluation_metrics import evaluate_model
 
-# Comprehensive model evaluation
-metrics = evaluate_model(bn_model, test_data)
-print(f"Accuracy: {metrics['accuracy']:.2f}%")
-print(f"Precision: {metrics['precision']:.2f}%")
-print(f"Recall: {metrics['recall']:.2f}%")
-print(f"F1-Score: {metrics['f1_score']:.2f}%")
-```
-## Usage Examples
-
-### Example 1: Single Patient Diagnosis
-```python
-# Define patient symptoms
-patient_symptoms = {
-    'fever': 1,          # Present
-    'cough': 1,          # Present
-    'sore_throat': 0,    # Absent
-    'shortness_of_breath': 0,  # Absent
-    'head_ache': 1,      # Present
-    'age_60_and_above': 0,     # Under 60
-    'gender': 1,         # Male
-    'test_indication': 1  # Contact with confirmed
-}
-
-# Get diagnosis probabilities
-diagnosis = bn_model.predict_proba(patient_symptoms)
-print(f"Negative: {diagnosis[0]:.3f}")
-print(f"Positive: {diagnosis[1]:.3f}")
-print(f"Other: {diagnosis[2]:.3f}")
-```
-
-### Example 2: Batch Processing
-```python
-# Process multiple patients
-patient_data = pd.read_csv('new_patients.csv')
-predictions = bn_model.predict_batch(patient_data)
-patient_data['predicted_covid_prob'] = predictions[:, 1]  # Positive probability
-```
-
-### Example 3: Symptom Importance Analysis
-```python
-from src.bayesian_network import calculate_symptom_importance
-
-# Calculate importance scores for each symptom
-importance_scores = calculate_symptom_importance(bn_model)
-for symptom, score in importance_scores.items():
-    print(f"{symptom}: {score:.4f}")
-```
-
-## Inference Methods Comparison
+## Inference Methodods
 
 The repository includes three inference methods with performance comparison:
 
-1. **Likelihood Weighting**: Best balance of accuracy and computational efficiency
-2. **Rejection Sampling**: High accuracy but computationally intensive
-3. **Gibbs Sampling**: MCMC method with convergence challenges in this context
+1. **Likelihood Weighting** 
+2. **Rejection Sampling**
+3. **Gibbs Sampling**
 
 ### Running Inference Comparison
 ```python
-from notebooks.inference_comparison import compare_inference_methods
+#Dictionary of the discrete value to let the method access at CPTs
+dict={True:1,False:0,
+      '0-15':0,'16-45':1,'46-90':2,
+      '1':0,'2':1,'3':2,'4':3,'5':4,
+      'sv':0,'<=5':1,'5.5-6.5':2,'7-9.5':3,'>=10':4}
 
-# Compare all three methods
-results = compare_inference_methods(
-    model=bn_model,
-    sample_sizes=[1000, 5000, 10000, 50000],
-    evidence={'fever': 1, 'cough': 1}
-)
+def discretization(x,value):
+  '''
+  Function that helps to discretize for the likelihood weighting and rejection sampling
+  x     : unknown variable
+  value : value to analize for the unknown variabile based on the value of the query variable
+  '''
+  if(x == dict[value]):
+    return 1
+  else:
+    return 0
+
+def prob_LW(samples,variable,query_value):
+  '''
+  Function that calculate the likelihood weighting probability
+  samples     : sample from which extract the probability value
+  variable    : variable of the query
+  query_value : value of the query variable
+  '''
+  discretize = np.vectorize(discretization)
+  samples_thresholded = discretize(samples[variable],query_value)
+  return round(np.sum(np.dot(samples_thresholded,samples['_weight']))/np.sum(samples['_weight']),2)
+
+def prob_RS(samples,variable,query_value):
+  '''
+  Function that calculate the rejection sampling probability
+  samples     : sample from which extract the probability value
+  variable    : variable of the query
+  query_value : value of the query variable
+  '''
+  discretize = np.vectorize(discretization)
+  samples_rejection = discretize(samples[variable],query_value)
+  return np.recarray.mean(samples_rejection, axis=0)
+
+def get_state_index(var, var_val):
+  '''
+  Funcion that return the index of a given value for a variable
+  '''
+  return inference.query([var], show_progress=False).state_names.get(var).index(var_val)
+
+def prob_GS(samples, query_variable, query_evidence, query_value):
+  """
+  Computes the probability of Gibbs Sampling given the samples
+  it will call a pgmpy query function building the string for the requested query
+  """
+  gs_query = ""
+  for evidence, value in query_evidence.items():
+    gs_query += evidence + " == " + str(get_state_index(evidence, value))
+    if evidence != list(query_evidence.keys())[-1]:
+      # add the '&' except fot the last element
+      gs_query += " & "
+
+  # check denominator to avoid division by 0
+  if samples.query(gs_query).shape[0] == 0:
+    return 0.0
+  else:
+    return (samples.query(query_variable[0] + " == " + str(get_state_index(query_variable[0], query_value)) + " & " + gs_query).shape[0] 
+          / samples.query(gs_query).shape[0])
+
+
+
+# Function to calculate Total Variation Distance
+def total_variation_distance(p, q):
+    """
+    Computes the Total Variation Distance between two probability distributions.
+    p: numpy array representing the true distribution
+    q: numpy array representing the approximated distribution
+    """
+    return 0.5 * np.sum(np.abs(p - q))
+
+# Function to calculate Kullback-Leibler divergence
+def kl_divergence(p, q):
+    """
+    Computes the Kullback-Leibler divergence between two probability distributions.
+    p: numpy array representing the true distribution
+    q: numpy array representing the approximated distribution
+    """
+    epsilon = 1e-10  # Small epsilon value to avoid zero probabilities
+    kl_divergence = np.sum(np.where(p != 0, p * np.log(p / (q + epsilon)), 0))
+    return kl_divergence
+
+
+
+# Function to calculate Hellinger Distance
+def hellinger_distance(p, q):
+    """
+    Computes the Hellinger Distance between two probability distributions.
+    p: numpy array representing the true distribution
+    q: numpy array representing the approximated distribution
+    """
+    return np.sqrt(np.sum((np.sqrt(p) - np.sqrt(q)) ** 2)) / np.sqrt(2)
+
+
+# Function to calculate Jensen-Shannon Divergence
+def jensen_shannon_divergence(p, q):
+    """
+    Computes the Jensen-Shannon Divergence between two probability distributions.
+    p: numpy array representing the true distribution
+    q: numpy array representing the approximated distribution
+    """
+    m = 0.5 * (p + q)
+    return 0.5 * (kl_divergence(p, m) + kl_divergence(q, m))
+
+def query_preprocessing(query_variable,query_evidence,query_value):
+  '''
+  Function that return the processed query variable,evidence in order to adapt them at the methods
+  of likelihood weighting and rejection sampling
+
+  query_var:     : list with one unknown variable of the query
+  query_evidence : dict representing the evidence of the query
+  query_value:   : value of the query var to find in the query
+  '''
+  
+
+  query = inference.query(query_variable,query_evidence,show_progress=False)
+  evidence = []
+
+  for (evidence_var, evidence_value) in query_evidence.items():
+    state = State(evidence_var,evidence_value)
+    evidence.append(state)
+
+  query_prob= query.values[dict[query_value]]
+  variables = query_variable[0]
+
+  return query_prob,evidence,variables
+
+
+def run_experiment(sample_size, query_variable, query_evidence, query_value):
+    '''
+    Function that return the result of a sampling experiment using likelihood weighting,
+    rejection sampling and Gibbs sampling
+
+    sample_size    : size of the sample for the experiment
+    query_variable : list with one unknown variable of the query
+    query_evidence : dict representing the evidence of the query
+    query_value:   : value of the query var to find in the query
+    '''
+
+    # Rounding precision
+    precision = 3
+
+    # Preprocessing for the LW and RS methods
+
+    query_prob, evidence, variable = query_preprocessing(query_variable, query_evidence, query_value)
+
+    t0_LW = time.time()
+    samples_LW = BMS_inference_loaded.likelihood_weighted_sample(evidence=evidence, size=sample_size, return_type='recarray')
+    approx_prob_LW = prob_LW(samples_LW, variable, query_value)
+    time_LW = round(time.time() - t0_LW, precision)
+
+    t0_RS = time.time()
+    samples_RS = BMS_inference_loaded.rejection_sample(evidence=evidence, size=sample_size, return_type='recarray', show_progress=False)
+    approx_prob_RS = prob_RS(samples_RS, variable, query_value)
+    time_RS = round(time.time() - t0_RS, precision)
+
+    t0_GS = time.time()
+    samples_GS = GS_inference_loaded.sample(size=sample_size, seed=37)
+    approx_prob_GS = prob_GS(samples_GS, query_variable, query_evidence, query_value)
+    time_GS = round(time.time() - t0_GS, precision)
+
+    # Calculate true distribution based on the query
+    true_distribution = np.array([query_prob, 1 - query_prob])
+
+    # Calculate approximated distributions for each method
+    approx_distribution_RS = np.array([1 - approx_prob_RS, approx_prob_RS])
+    approx_distribution_LW = np.array([1 - approx_prob_LW, approx_prob_LW])
+    approx_distribution_GS = np.array([1 - approx_prob_GS, approx_prob_GS])
+
+    # Calculate KL divergences
+    kl_RS = kl_divergence(true_distribution, approx_distribution_RS)
+    kl_LW = kl_divergence(true_distribution, approx_distribution_LW)
+    kl_GS = kl_divergence(true_distribution, approx_distribution_GS)
+
+    # Calculate Total Variation Distances
+    tv_RS = total_variation_distance(true_distribution, approx_distribution_RS)
+    tv_LW = total_variation_distance(true_distribution, approx_distribution_LW)
+    tv_GS = total_variation_distance(true_distribution, approx_distribution_GS)
+
+    # Calculate Hellinger Distances
+    hd_RS = hellinger_distance(true_distribution, approx_distribution_RS)
+    hd_LW = hellinger_distance(true_distribution, approx_distribution_LW)
+    hd_GS = hellinger_distance(true_distribution, approx_distribution_GS)
+
+    # Calculate Jensen-Shannon Divergences
+    js_RS = jensen_shannon_divergence(true_distribution, approx_distribution_RS)
+    js_LW = jensen_shannon_divergence(true_distribution, approx_distribution_LW)
+    js_GS = jensen_shannon_divergence(true_distribution, approx_distribution_GS)
+
+    # Return results
+    return np.array([(sample_size, query_prob,
+                      approx_prob_RS, kl_RS, tv_RS, hd_RS, js_RS, time_RS,
+                      approx_prob_LW, kl_LW, tv_LW, hd_LW, js_LW, time_LW,
+                      approx_prob_GS, kl_GS, tv_GS, hd_GS, js_GS, time_GS)],
+                      dtype=[('sample_size', '<i8'),  ('query_prob', '<f8'),
+                             ('approx_prob_RS', '<f8'), ('kl_divergence_RS', '<f8'), ('tv_distance_RS', '<f8'), ('hellinger_distance_RS', '<f8'), ('jensen_shannon_divergence_RS', '<f8'), ('time_RS', '<f8'),
+                             ('approx_prob_LW', '<f8'), ('kl_divergence_LW', '<f8'), ('tv_distance_LW', '<f8'), ('hellinger_distance_LW', '<f8'), ('jensen_shannon_divergence_LW', '<f8'), ('time_LW', '<f8'),
+                             ('approx_prob_GS', '<f8'), ('kl_divergence_GS', '<f8'), ('tv_distance_GS', '<f8'), ('hellinger_distance_GS', '<f8'), ('jensen_shannon_divergence_GS', '<f8'), ('time_GS', '<f8')])
+
+
+#Query in approximate inference
+def approximate_inference(q, query_var, query_evidence, query_value, starting_size=2.5, final_size=5, experiments=10):  
+    '''
+    Function that create the result of the different approximate inference methods using
+    different sample size values
+
+    query_var:     : list with one unknown variable of the query
+    query_evidence : dict representing the evidence of the query
+    query_value:   : value of the query var to find in the query
+    starting_size=2 : exponent of the number of start sample points that are 10^(starting_size)
+    final_size=5    : exponent of the number of final sample points that are 10^(final_size)
+    experiments=10 : number of sampling experiments
+    '''
+    results = np.array([],dtype=[('sample_size', '<i8'), ('query_prob', '<f8'),
+                           ('approx_prob_RS', '<f8'),  ('kl_divergence_RS', '<f8'), ('tv_distance_RS', '<f8'), ('hellinger_distance_RS', '<f8'), ('jensen_shannon_divergence_RS', '<f8'), ('time_RS', '<f8'),
+                           ('approx_prob_LW', '<f8'),  ('kl_divergence_LW', '<f8'), ('tv_distance_LW', '<f8'), ('hellinger_distance_LW', '<f8'), ('jensen_shannon_divergence_LW', '<f8'), ('time_LW', '<f8'),
+                           ('approx_prob_GS', '<f8'),  ('kl_divergence_GS', '<f8'), ('tv_distance_GS', '<f8'), ('hellinger_distance_GS', '<f8'), ('jensen_shannon_divergence_GS', '<f8'), ('time_GS', '<f8')])
+
+    for size in np.logspace(starting_size, final_size, num=experiments, dtype='<i8'):
+        results = np.append(results, run_experiment(size, query_var, query_evidence, query_value))
+
+    globals()[f"query{q}"] = pd.DataFrame(results)
+    globals()[f"query{q}"].to_csv(f"query{q}" + '.csv')
+    # display table
+    print("\nResults during sampling:")
+    display(pd.DataFrame(results))
+    print("\n")
+    # show plots
+    plot_results(results, query_evidence, query_var, query_value)
+import matplotlib.pyplot as plt
+import numpy as np
+from IPython.display import display
+import time
+# Set the desired figure size
+figure_width = 15  # You can adjust this value based on your needs
+figure_height = 10  # You can adjust this value based on your needs
+
+# Adjust font sizes globally
+plt.rcParams.update({'font.size': 14, 'legend.fontsize': 12, 'xtick.labelsize': 12, 'ytick.labelsize': 12})
+
+
+def plot_results(results, query_evidence, query_variable, query_value):
+    '''
+    Function to plot the result of the approximate inference
+    '''
+    query_prob, evidence, var = query_preprocessing(query_variable, query_evidence, query_value)
+    
+    plt.figure(figsize=(figure_width, figure_height))  # Set the figure size here
+    plt.grid(True)
+    plt.title("Approximate probability values", fontsize=16)
+    LWCplot, = plt.semilogx(results['sample_size'], results['approx_prob_LW'], 'go--', label="Likelihood Weighting", markersize=8)
+    RSCplot, = plt.semilogx(results['sample_size'], results['approx_prob_RS'], 'bo--', label="Rejection Sampling", markersize=8)
+    GSCplot, = plt.semilogx(results['sample_size'], results['approx_prob_GS'], 'mo--', label="Gibbs Sampling", markersize=8)
+    VECplot, = plt.semilogx(results['sample_size'], query_prob * np.ones(results.size), 'r', label="reference value")
+    plt.xlabel("Sample size")
+    plt.ylabel("Approximate probability value")
+    plt.legend(handles=[LWCplot, RSCplot, GSCplot, VECplot], loc='upper right')
+    plt.tight_layout()
+    # Save the plot with desired dimensions
+    plt.savefig('Approximate_probability_values.png', dpi=300)  # You can adjust the filename and dpi as needed
+    plt.show()
+
+    
+    plt.figure(figsize=(figure_width, figure_height))  # Set the figure size here
+    plt.grid(True)
+    plt.title("Trend of KL Divergence", fontsize=16)
+    KLRSplot, = plt.semilogx(results['sample_size'], results['kl_divergence_RS'], 'bo--', label="Rejection Sampling", markersize=8)
+    KLLWplot, = plt.semilogx(results['sample_size'], results['kl_divergence_LW'], 'go--', label="Likelihood Weighting", markersize=8)
+    KLGSplot, = plt.semilogx(results['sample_size'], results['kl_divergence_GS'], 'mo--', label="Gibbs Sampling", markersize=8)
+    plt.xlabel("Sample size")
+    plt.ylabel("KL Divergence")
+    plt.legend(handles=[KLRSplot, KLLWplot, KLGSplot], loc='upper right')
+    plt.tight_layout()
+    # Save the plot with desired dimensions
+    plt.savefig('Trend_of_KL_Divergence.png', dpi=300)  # You can adjust the filename and dpi as needed
+    plt.show()
+
+    plt.figure(figsize=(figure_width, figure_height))  # Set the figure size here
+    plt.grid(True)
+    plt.title("Trend of Total Variation Distance (TV Distance)", fontsize=16)
+    TVRSplot, = plt.semilogx(results['sample_size'], results['tv_distance_RS'], 'bo--', label="Rejection Sampling", markersize=8)
+    TVLWplot, = plt.semilogx(results['sample_size'], results['tv_distance_LW'], 'go--', label="Likelihood Weighting", markersize=8)
+    TVGSplot, = plt.semilogx(results['sample_size'], results['tv_distance_GS'], 'mo--', label="Gibbs Sampling", markersize=8)
+    plt.xlabel("Sample size")
+    plt.ylabel("Total Variation Distance (TV Distance)")
+    plt.legend(handles=[TVRSplot, TVLWplot, TVGSplot], loc='upper right')
+    plt.tight_layout()
+    # Save the plot with desired dimensions
+    plt.savefig('Total_Variation_Distance.png', dpi=300)  # You can adjust the filename and dpi as needed
+    plt.show()
+    
+    plt.figure(figsize=(figure_width, figure_height))  # Set the figure size here
+    plt.grid(True)
+    plt.title("Trend of Hellinger Distance", fontsize=16)
+    HDRSplot, = plt.semilogx(results['sample_size'], results['hellinger_distance_RS'], 'bo--', label="Rejection Sampling", markersize=8)
+    HDLWplot, = plt.semilogx(results['sample_size'], results['hellinger_distance_LW'], 'go--', label="Likelihood Weighting", markersize=8)
+    HDGSplot, = plt.semilogx(results['sample_size'], results['hellinger_distance_GS'], 'mo--', label="Gibbs Sampling", markersize=8)
+    plt.xlabel("Sample size")
+    plt.ylabel("Hellinger Distance")
+    plt.legend(handles=[HDRSplot, HDLWplot, HDGSplot], loc='upper right')
+    plt.tight_layout()
+    # Save the plot with desired dimensions
+    plt.savefig('Trend_of_Hellinger_Distance.png', dpi=300)  # You can adjust the filename and dpi as needed
+    plt.show()
+    
+    plt.figure(figsize=(figure_width, figure_height))  # Set the figure size here
+    plt.grid(True)
+    plt.title("Trend of Jensen-Shannon Divergence", fontsize=16)
+    JSRSplot, = plt.semilogx(results['sample_size'], results['jensen_shannon_divergence_RS'], 'bo--', label="Rejection Sampling", markersize=8)
+    JSLWplot, = plt.semilogx(results['sample_size'], results['jensen_shannon_divergence_LW'], 'go--', label="Likelihood Weighting", markersize=8)
+    JSGSplot, = plt.semilogx(results['sample_size'], results['jensen_shannon_divergence_GS'], 'mo--', label="Gibbs Sampling", markersize=8)
+    plt.xlabel("Sample size")
+    plt.ylabel("Jensen-Shannon Divergence")
+    plt.legend(handles=[JSRSplot, JSLWplot, JSGSplot], loc='upper right')
+    plt.tight_layout()
+    # Save the plot with desired dimensions
+    plt.savefig('Trend_of_Jensen_Shannon_Divergence.png', dpi=300)  # You can adjust the filename and dpi as needed
+    plt.show()
+    
+
+    plt.figure(figsize=(figure_width, figure_height))  # Set the figure size here
+    plt.grid(True)
+    plt.title("Trend of the sampling time", fontsize=16)
+    TLWplot, = plt.semilogx(results['sample_size'], results['time_LW'], 'go--', label="Likelihood Weighting", markersize=8)
+    TRSplot, = plt.semilogx(results['sample_size'], results['time_RS'], 'bo--', label="Rejection Sampling", markersize=8)
+    TGSplot, = plt.semilogx(results['sample_size'], results['time_GS'], 'mo--', label="Gibbs Sampling", markersize=8)
+    plt.xlabel("Sample size")
+    plt.ylabel("Seconds")
+    plt.legend(handles=[TLWplot, TRSplot, TGSplot], loc='upper right')
+    plt.tight_layout()
+    # Save the plot with desired dimensions
+    plt.savefig('Trend_of_the_sampling_time.png', dpi=300)  # You can adjust the filename and dpi as needed
+    plt.show()
+
+print("P(corona result| fever:True, cough:true)")
+
+query_var = ['corona_result']
+query_evidence = {'cough':1,'fever':1}
+value=True
+q=1
+approximate_inference(q,query_var,query_evidence,value)
+
+
 ```
+![Fig9](Fig9.png)
+![Fig10](Fig10.png)
+![Fig11](Fig11.png)
+![Fig12](Fig12.png)
+![Fig13](Fig13.png)
 
-## Model Performance
-
-Achieved performance metrics on test dataset:
-- **Accuracy**: 95.34%
-- **Precision**: 94.49%
-- **Recall**: 95.34%
-- **F1-Score**: 94.05%
-
-## Data Format
-
-The model expects input data with the following format:
-
-| Column | Type | Values | Description |
-|--------|------|--------|-------------|
-| cough | int | 0, 1 | 0=Absent, 1=Present |
-| fever | int | 0, 1 | 0=Absent, 1=Present |
-| sore_throat | int | 0, 1 | 0=Absent, 1=Present |
-| shortness_of_breath | int | 0, 1 | 0=Absent, 1=Present |
-| head_ache | int | 0, 1 | 0=Absent, 1=Present |
-| age_60_and_above | int | 0, 1 | 0=Under 60, 1=60+ |
-| gender | int | 0, 1 | 0=Female, 1=Male |
-| test_indication | int | 1, 2, 3 | 1=Contact, 2=Abroad, 3=Other |
-| corona_result | int | 0, 1, 2 | 0=Negative, 1=Positive, 2=Other |
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## Citation
 
@@ -717,6 +979,7 @@ If you use this code in your research, please cite:
   journal={PeerJ Computer Science},
   year={2024}
 }
+
 ```
 
 ## License
