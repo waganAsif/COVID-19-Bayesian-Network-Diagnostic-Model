@@ -472,6 +472,39 @@ plt.show()
 
 ```
 ![Fig5](Fig5.png)
+### 4. Plotting the Confusion Matrix
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Set up the figure for the confusion matrix (Higher resolution and colorblind-friendly)
+fig, ax = plt.subplots(figsize=(12, 10), dpi=150)
+
+# Use a colorblind-friendly palette (cividis)
+sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', ax=ax, cbar=False,
+            xticklabels=['Negative', 'Positive', 'Other'], 
+            yticklabels=['Negative', 'Positive', 'Other'],
+            linewidths=0.8, linecolor='black', annot_kws={"size": 16, "fontweight": 'bold'})
+
+# Enhance titles and labels for better clarity in research papers
+ax.set_title("Confusion Matrix of COVID-19 Test Prediction", fontsize=24, fontweight='bold', pad=30)
+ax.set_xlabel("Predicted Label", fontsize=20, fontweight='bold')
+ax.set_ylabel("True Label", fontsize=20, fontweight='bold')
+
+# Customize tick parameters for better readability
+ax.xaxis.set_tick_params(labelsize=16)
+ax.yaxis.set_tick_params(labelsize=16)
+
+# Remove grid for a cleaner look
+plt.grid(False)
+
+# Save the figure with high resolution
+plt.savefig("confusion_matrix_high_res.png", bbox_inches='tight', dpi=150)
+
+plt.tight_layout()
+plt.show()
+```
+![Fig6](Fig6.png)
 ### 4. Evaluate Model Performance
 ```python
 from src.evaluation_metrics import evaluate_model
