@@ -20,6 +20,21 @@ covid-19-bayesian-network/
 │   └── corona_tested_individuals_ver_006.english.csv
 └── README.md
 ```
+## 🖥️ Computing Infrastructure and Implementation Details
+
+## 💻 Computing Infrastructure
+
+All experiments were conducted on a computing environment with the following specifications:
+
+## 🔧 Hardware Configuration
+- **Processor:** Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz (Turbo up to 1.99 GHz, 4 cores / 8 threads)  
+- **Memory:** 20.0 GB RAM (19.9 GB usable)  
+- **Storage:** 1TB SSD (used for data processing and model storage)  
+- **System Type:** 64-bit Operating System, x64-based processor  
+
+## 🧑‍💻 Software Environment
+- **Operating System:** Windows 10 (64-bit)  
+- **Python Version:** 3.8.10  
 
 ## Requirements
 - Python 3.7.15
@@ -33,6 +48,16 @@ covid-19-bayesian-network/
 - NetworkX 2.6.3
 - Statsmodels 0.13.5
 
+
+
+
+## 🛠️ Development Environment
+
+- **Interactive Analysis:** Jupyter Notebook 6.4.3  
+- **Version Control:** Git 2.25.1  
+- **Package Management:** Anaconda 4.10.3  
+
+---
 ## Installation
 
 ### Step 1: Clone the Repository
