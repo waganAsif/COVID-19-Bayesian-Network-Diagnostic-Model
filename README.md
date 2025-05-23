@@ -990,7 +990,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Corresponding Author**: Samar M. Alqhtani (smalqhtani@nu.edu.sa)
 - **First Author**: Asif Ali Wagan
-- **Repository Maintainer**: [Your GitHub username]
+- **Repository Maintainer**: [waganAsif]
 
 ## Acknowledgments
 
