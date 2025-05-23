@@ -139,7 +139,7 @@ for cpd in model.get_cpds():
 
 # Create inference engines for querying the model
 # 1. Exact Inference
-infer = VariableElimination(model)
+inference = VariableElimination(model)
 
 # 2. Approximate Inference Methods
 BMS_inference = BayesianModelSampling(model)  # Likelihood weighting and rejection
@@ -149,16 +149,24 @@ GS_inference = GibbsSampling(model)           # Gibbs sampling
 
 ### 3. Perform Inference
 ```python
-from src.inference_methods import LikelihoodWeighting
-
-# Create inference engine
-inference = LikelihoodWeighting(bn_model)
-
-# Query COVID-19 probability given symptoms
+# Define observed symptoms as evidence
 evidence = {'fever': 1, 'cough': 1, 'sore_throat': 1}
-result = inference.query(['corona_result'], evidence=evidence)
-print(f"COVID-19 Probability: {result}")
-```
+
+# Query the probability of COVID-19 given the evidence
+query_result = inference.query(variables=['corona_result'], evidence=evidence, show_progress=False)
+
+# Display the result in a readable format
+print("COVID-19 Probability Given Evidence:")
+for state, prob in zip(query_result.state_names['corona_result'], query_result.values):
+    print(f"P(corona_result = {state} | evidence) = {prob:.4f}")
+
+show_active_trail(model,
+                  start='test_date',
+                  end='corona_result',
+                  evidences={'fever': 1, 'cough': 1, 'sore_throat': 1},
+                  trail_to_show=['test_date', 'cough', 'fever', 'sore_throat', 'shortness_of_breath',
+                                 'head_ache', 'corona_result', 'age_60_and_above', 'gender', 'test_indication'])
+
 
 ### 4. Evaluate Model Performance
 ```python
