@@ -415,11 +415,12 @@ df_test_sample = df_test.sample(frac=0.001, random_state=42)
 # Calculate metrics on the sample test data
 accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(model, df_test_sample, 'corona_result')
 
-```
 Predictive Accuracy: 95.34%
 Precision: 94.49%
 Recall: 95.34%
 F1 Score: 94.05%
+```
+
 
 ### 4. Evaluate Model Performance
 ```python
