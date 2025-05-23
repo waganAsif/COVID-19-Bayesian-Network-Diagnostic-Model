@@ -417,10 +417,10 @@ accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(mod
 
 
 ```
-# Predictive Accuracy: 95.34%
-# Precision: 94.49%
-# Recall: 95.34%
-# F1 Score: 94.05%
+### Predictive Accuracy: 95.34%
+### Precision: 94.49%
+### Recall: 95.34%
+### F1 Score: 94.05%
 
 ### 4. Evaluate Model Performance
 ```python
