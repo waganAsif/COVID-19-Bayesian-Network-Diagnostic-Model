@@ -11,20 +11,12 @@ This repository contains the implementation of an optimized Bayesian Network for
 - **Clinical Decision Support**: Probabilistic inference for COVID-19 diagnosis
 
 covid-19-bayesian-network/
-├── README.md
-├── covid(thirdpaper).ipynb      # All code and analysis in one notebook
-├── requirements.txt
-├── thirdpaper_covid.yml         # Conda environment file
+├── covid(thirdpaper).ipynb      # Jupyter Notebook with all analysis and code
 ├── data/
-│   └── covid19_dataset.csv
-├── results/
-│   ├── performance_metrics.json
-│   ├── roc_curves.png
-│   ├── confusion_matrix.png
-│   └── inference_comparison.csv
-└── docs/
-    ├── methodology.md
-    └── api_documentation.md
+│   ├── corona_tested_individuals_ver_0083.english.csv
+│   └── corona_tested_individuals_ver_006.english.csv
+└── README.md
+
 
 
 ## Requirements
