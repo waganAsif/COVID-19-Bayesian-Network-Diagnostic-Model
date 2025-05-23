@@ -257,8 +257,8 @@ show_active_trail(
 
 
 ```
-![Fig1](Fig2.png)
-![Fig2](Fig3.png)
+![Fig2](Fig2.png)
+![Fig3](Fig3.png)
 ### 4. Comparing Conditional Probability Tables (CPTs) with Visual Labels
 ```python
 import matplotlib.pyplot as plt
@@ -346,7 +346,7 @@ def compare_cpts_with_labels(model, variable, result_labels):
     plt.show()
 
 ```
-![Fig1](Fig3.png)
+![Fig4](Fig4.png)
 ### 4. Evaluate Model Performance
 ```python
 from src.evaluation_metrics import evaluate_model
