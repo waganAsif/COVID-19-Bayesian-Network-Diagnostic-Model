@@ -998,12 +998,14 @@ approximate_inference(q,query_var,query_evidence,value)
 If you use this code in your research, please cite:
 
 ```bibtex
-@article{wagan2024optimized,
+@unpublished{wagan2024optimized,
   title={Optimized Bayesian Network for COVID-19 Diagnosis Leveraging Dirichlet Priors and BDeu Scoring for Accurate Inference},
   author={Wagan, Asif Ali and Talpur, Shahnawaz and Narejo, Sanam and Alqhtani, Samar M and Alqazzaz, Ali and Al Reshan, Mana Saleh and Shaikh, Asadullah},
-  journal={PeerJ Computer Science},
-  year={2024}
+  note={Manuscript submitted for publication to PeerJ Computer Science},
+  year={2025}
 }
+
+
 
 ```
 
