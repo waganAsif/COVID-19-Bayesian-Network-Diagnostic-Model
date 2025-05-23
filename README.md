@@ -59,10 +59,35 @@ pip install -r requirements.txt
 
 ### 1. Data Preprocessing
 ```python
-from data.data_preprocessing import preprocess_covid_data
+# Handle missing values
+df_test['age_60_and_above'].fillna('No', inplace=True)
+updated_df['age_60_and_above'].fillna('No', inplace=True)
 
-# Load and preprocess the dataset
-processed_data = preprocess_covid_data('data/covid19_dataset.csv')
+# Define categorical encodings
+cleanup_nums = {
+    "corona_result": {
+        "other": 2,
+        "negative": 0,
+        "positive": 1
+    },
+    "age_60_and_above": {
+        "Yes": 1,
+        "No": 0
+    },
+    "gender": {
+        "male": 1,
+        "female": 0
+    },
+    "test_indication": {
+        "Contact with confirmed": 1,
+        "Abroad": 2,
+        "Other": 3
+    }
+}
+
+# Apply encodings
+updated_df1 = updated_df.replace(cleanup_nums)
+df_test = df_test.replace(cleanup_nums)
 ```
 
 ### 2. Build Bayesian Network
