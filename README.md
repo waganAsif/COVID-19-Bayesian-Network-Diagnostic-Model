@@ -9,6 +9,7 @@ This repository contains the implementation of an optimized Bayesian Network for
 - **Multiple Inference Methods**: Implementation and comparison of Likelihood Weighting, Rejection Sampling, and Gibbs Sampling
 - **Comprehensive Evaluation**: Multiple distance metrics and performance assessments
 - **Clinical Decision Support**: Probabilistic inference for COVID-19 diagnosis
+
 ## Repository Structure
 covid-19-bayesian-network/
 ├── covid(thirdpaper).ipynb      # Jupyter Notebook with all analysis and code
