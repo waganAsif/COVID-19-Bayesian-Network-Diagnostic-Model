@@ -149,26 +149,116 @@ GS_inference = GibbsSampling(model)           # Gibbs sampling
 
 ### 3. Perform Inference
 ```python
-# Define observed symptoms as evidence
-evidence = {'fever': 1, 'cough': 1, 'sore_throat': 1}
+def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
+    import matplotlib.pyplot as plt
+    import networkx as nx
+    import numpy as np
+    from pgmpy.inference import VariableElimination
 
-# Query the probability of COVID-19 given the evidence
-query_result = inference.query(variables=['corona_result'], evidence=evidence, show_progress=False)
+    # Build a readable title string for the inference
+    str_evidences = '| ' if evidences else ''
+    for evidence, value in evidences.items():
+        str_evidences += f"{evidence}={value}"
+        if evidence != list(evidences.keys())[-1]:
+            str_evidences += ', '
+    title_inference = f'P({end} {str_evidences})'
 
-# Display the result in a readable format
-print("COVID-19 Probability Given Evidence:")
-for state, prob in zip(query_result.state_names['corona_result'], query_result.values):
-    print(f"P(corona_result = {state} | evidence) = {prob:.4f}")
+    # Set up figure layout with two subplots: inference table and network graph
+    fig = plt.figure(figsize=(20, 10))
+    ax1, ax2 = fig.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1.2, 1.8]})
 
-show_active_trail(model,
-                  start='test_date',
-                  end='corona_result',
-                  evidences={'fever': 1, 'cough': 1, 'sore_throat': 1},
-                  trail_to_show=['test_date', 'cough', 'fever', 'sore_throat', 'shortness_of_breath',
-                                 'head_ache', 'corona_result', 'age_60_and_above', 'gender', 'test_indication'])
+    # Perform Bayesian inference
+    inference = VariableElimination(model)
+    query = inference.query(variables=[end], evidence=evidences, show_progress=False)
+
+    # Format and display the inference table
+    probabilities = [f'{value:.4f}' for value in query.values]
+    table = np.column_stack((query.state_names[query.variables[0]], probabilities))
+    font_size = 18
+    bbox = [0, 0, 1, 0.70]
+    mpl_table = ax1.table(cellText=table,
+                          bbox=bbox,
+                          cellLoc='center',
+                          colLabels=[f'{end} State', f'P({end} | Evidence)'],
+                          colWidths=[1.5, 2],
+                          loc='center',
+                          colColours=['#d9d9d9', '#d9d9d9'])
+    mpl_table.auto_set_font_size(False)
+    mpl_table.set_fontsize(font_size)
+    ax1.axis('off')
+    ax1.set_title(title_inference, fontsize=22)
+
+    # Check and display whether the trail is active
+    obs = list(evidences.keys()).copy()
+    if start in obs:
+        obs.remove(start)
+    active = model.is_active_trail(start=start, end=end, observed=obs)
+    title_graph = f"Active Trail ({start} → {end}): {'Active' if active else 'Inactive'}"
+
+    # Filter edges and configure colors and sizes
+    trail_edges = [edge for edge in model.edges if edge[0] in trail_to_show and edge[1] in trail_to_show]
+    node_colors = ['#f4d03f' if node in evidences else '#ffffff' for node in trail_to_show]
+    node_sizes = [1200 if node in [start, end] else 900 for node in trail_to_show]
+    edge_colors = ['#e74c3c' if (edge[0] in evidences and evidences[edge[0]] == 1) else 
+                   '#3498db' if (edge[0] in evidences and evidences[edge[0]] == 0) else '#7f8c8d' 
+                   for edge in trail_edges]
+    edge_widths = [3.2 if edge[0] in evidences else 2.2 for edge in trail_edges]
+
+    # Draw the network graph
+    pos = nx.spring_layout(model, seed=42)
+    nx.draw_networkx_edges(model, pos, edgelist=trail_edges, edge_color=edge_colors, width=edge_widths, ax=ax2, arrows=True)
+    nx.draw_networkx_nodes(model, pos, nodelist=trail_to_show, node_color=node_colors, edgecolors='black', node_size=node_sizes, ax=ax2)
+    nx.draw_networkx_labels(model, pos, ax=ax2, font_size=16)
+
+    # Annotate start and end nodes
+    ax2.annotate('Start Node', xy=pos[start], xycoords='data',
+                 xytext=(-70, 40), textcoords='offset points',
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),
+                 fontsize=14, bbox=dict(boxstyle="round,pad=0.3", edgecolor='black', facecolor='white'))
+    ax2.annotate('End Node', xy=pos[end], xycoords='data',
+                 xytext=(70, -40), textcoords='offset points',
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),
+                 fontsize=14, bbox=dict(boxstyle="round,pad=0.3", edgecolor='black', facecolor='white'))
+
+    # Add legend for color and edge meaning
+    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Evidence Node (Yellow)', 
+                                  markerfacecolor='#f4d03f', markersize=12, markeredgecolor='black'),
+                       plt.Line2D([0], [0], marker='o', color='w', label='Other Nodes (White)', 
+                                  markerfacecolor='#ffffff', markersize=12, markeredgecolor='black'),
+                       plt.Line2D([0], [0], color='#e74c3c', lw=3.2, label='Edge (Symptom Present - Red)'),
+                       plt.Line2D([0], [0], color='#3498db', lw=3.2, label='Edge (Symptom Absent - Blue)'),
+                       plt.Line2D([0], [0], color='#7f8c8d', lw=2.2, label='Edge (Neutral - Gray)')]
+    ax2.legend(handles=legend_elements, loc='upper right', fontsize=14, bbox_to_anchor=(1.15, 1))
+
+    ax2.set_title(title_graph, fontsize=22)
+    plt.tight_layout()
+    plt.show()
+
+show_active_trail(
+    model,
+    start='test_date',
+    end='corona_result',
+    evidences={'sore_throat': 1, 'fever': 1},
+    trail_to_show=[
+        'test_date', 'cough', 'fever', 'sore_throat', 'shortness_of_breath',
+        'head_ache', 'corona_result', 'age_60_and_above', 'gender', 'test_indication'
+    ]
+)
+show_active_trail(
+    model,
+    start='test_date',
+    end='corona_result',
+    evidences={'sore_throat': 0, 'fever': 0},
+    trail_to_show=[
+        'test_date', 'cough', 'fever', 'sore_throat', 'shortness_of_breath',
+        'head_ache', 'corona_result', 'age_60_and_above', 'gender', 'test_indication'
+    ]
+)
+
 
 ```
 ![Fig1](Fig2.png)
+![Fig2](Fig3.png)
 
 ### 4. Evaluate Model Performance
 ```python
