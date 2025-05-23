@@ -92,11 +92,59 @@ df_test = df_test.replace(cleanup_nums)
 
 ### 2. Build Bayesian Network
 ```python
-from src.bayesian_network import COVID19BayesianNetwork
+from pgmpy.models import BayesianModel
+from pgmpy.estimators import BayesianEstimator
+from pgmpy.inference import VariableElimination, BayesianModelSampling, GibbsSampling
+from IPython.core.display import display, HTML
 
-# Initialize and train the model
-bn_model = COVID19BayesianNetwork()
-bn_model.fit(processed_data)
+# Define the structure of the Bayesian Network
+# Each tuple represents a directed edge: (parent, child)
+architecture = [
+    ("test_date", "corona_result"),
+    ("cough", "corona_result"),
+    ("fever", "corona_result"),
+    ("sore_throat", "corona_result"),
+    ("shortness_of_breath", "corona_result"),
+    ("head_ache", "corona_result"),
+    ("age_60_and_above", "corona_result"),
+    ("test_indication", "corona_result"),
+    ("gender", "corona_result")
+]
+
+# Initialize the Bayesian Model with the given structure
+model = BayesianModel(architecture)
+
+# Improve notebook display: prevent line wrapping in output cells (optional)
+display(HTML("<style>.output_area pre {white-space: pre;}</style>"))
+
+# Fit the model to the dataset using a Bayesian Estimator
+# - BDeu prior: suitable for sparse data
+# - Equivalent Sample Size controls the influence of prior vs. data
+# - complete_samples_only=False allows incomplete rows in the training data
+model.fit(
+    data=updated_df1,
+    estimator=BayesianEstimator,
+    prior_type="BDeu",
+    equivalent_sample_size=10,
+    complete_samples_only=False
+)
+
+# Validate the model to ensure there are no logical inconsistencies
+print(f'Check model: {model.check_model()}\n')
+
+# Print the Conditional Probability Distributions (CPDs) of each node
+for cpd in model.get_cpds():
+    print(f'CPT of {cpd.variable}:')
+    print(cpd, '\n')
+
+# Create inference engines for querying the model
+# 1. Exact Inference
+infer = VariableElimination(model)
+
+# 2. Approximate Inference Methods
+BMS_inference = BayesianModelSampling(model)  # Likelihood weighting and rejection
+GS_inference = GibbsSampling(model)           # Gibbs sampling
+
 ```
 
 ### 3. Perform Inference
