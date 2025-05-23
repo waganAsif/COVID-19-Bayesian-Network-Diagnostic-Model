@@ -37,8 +37,8 @@ covid-19-bayesian-network/
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/username/covid-19-bayesian-network.git
-cd covid-19-bayesian-network
+git clone https://github.com/username/COVID-19-Bayesian-Network-Diagnostic-Model.git
+cd COVID-19-Bayesian-Network-Diagnostic-Model
 ```
 
 ### Step 2: Create Conda Environment
