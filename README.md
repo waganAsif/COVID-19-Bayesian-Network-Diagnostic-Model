@@ -347,6 +347,75 @@ def compare_cpts_with_labels(model, variable, result_labels):
 
 ```
 ![Fig4](Fig4.png)
+
+## Evaluating Model Performance with Metrics and Confusion Matrix
+
+This function calculates the predictive accuracy, precision, recall, F1 score, and confusion matrix
+for a given Bayesian Network model on a test dataset using pgmpy and sklearn.metrics.
+
+```python
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+
+def calculate_metrics_and_confusion_matrix(model, data, actual_var):
+    """
+    Calculate accuracy, precision, recall, F1 score, and confusion matrix for model predictions.
+
+    Parameters:
+    - model: pgmpy BayesianModel (trained)
+    - data: pandas DataFrame containing test samples
+    - actual_var: string, name of the target variable column
+
+    Returns:
+    - accuracy, precision, recall, f1 (percentages)
+    - confusion matrix (numpy array)
+    """
+    from pgmpy.inference import VariableElimination
+
+    inference = VariableElimination(model)
+    correct_predictions = 0
+    true_labels = []
+    predicted_labels = []
+
+    # Iterate over each test sample row
+    for _, row in data.iterrows():
+        # Extract evidence dictionary excluding the target variable
+        evidence = row.drop(actual_var).to_dict()
+        actual = row[actual_var]
+
+        # Perform MAP query to predict the target variable given evidence
+        query = inference.map_query(variables=[actual_var], evidence=evidence, show_progress=False)
+
+        true_labels.append(actual)
+        predicted_labels.append(query[actual_var])
+
+        # Count correct predictions
+        if query[actual_var] == actual:
+            correct_predictions += 1
+
+    # Calculate metrics
+    accuracy = correct_predictions / len(data)
+    precision = precision_score(true_labels, predicted_labels, average='weighted')
+    recall = recall_score(true_labels, predicted_labels, average='weighted')
+    f1 = f1_score(true_labels, predicted_labels, average='weighted')
+    cm = confusion_matrix(true_labels, predicted_labels)
+
+    # Print metrics as percentages
+    print(f'Predictive Accuracy: {accuracy * 100:.2f}%')
+    print(f'Precision: {precision * 100:.2f}%')
+    print(f'Recall: {recall * 100:.2f}%')
+    print(f'F1 Score: {f1 * 100:.2f}%')
+
+    return accuracy * 100, precision * 100, recall * 100, f1 * 100, cm
+
+
+# Example usage:
+# Sample a small portion of the test data (0.1%) for faster computation
+df_test_sample = df_test.sample(frac=0.001, random_state=42)
+
+# Calculate metrics on the sample test data
+accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(model, df_test_sample, 'corona_result')
+
+```
 ### 4. Evaluate Model Performance
 ```python
 from src.evaluation_metrics import evaluate_model
@@ -358,7 +427,6 @@ print(f"Precision: {metrics['precision']:.2f}%")
 print(f"Recall: {metrics['recall']:.2f}%")
 print(f"F1-Score: {metrics['f1_score']:.2f}%")
 ```
-
 ## Usage Examples
 
 ### Example 1: Single Patient Diagnosis
