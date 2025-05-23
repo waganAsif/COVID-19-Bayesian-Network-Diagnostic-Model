@@ -259,7 +259,94 @@ show_active_trail(
 ```
 ![Fig1](Fig2.png)
 ![Fig2](Fig3.png)
+### 4. Comparing Conditional Probability Tables (CPTs) with Visual Labels
+```python
+import matplotlib.pyplot as plt
+from pgmpy.inference import VariableElimination
+import pandas as pd
+import matplotlib.patches as mpatches
 
+def compare_cpts_with_labels(model, variable, result_labels):
+    """
+    Compare the CPTs (conditional probability tables) of a variable across multiple evidence sets.
+
+    Parameters:
+    - model: pgmpy BayesianModel instance
+    - variable: str, the variable to query (e.g., 'corona_result')
+    - result_labels: list of str, labels for the variable's states (e.g., ['negative', 'positive', 'other'])
+    """
+    inference = VariableElimination(model)
+
+    # Define distinct evidence sets to compare
+    evidence_sets = [
+        {'fever': 1, 'sore_throat': 1, 'cough': 1, 'head_ache': 1},
+        {'fever': 0, 'sore_throat': 0, 'cough': 0, 'head_ache': 0},
+        {'fever': 1, 'sore_throat': 0, 'cough': 1, 'head_ache': 0},
+        {'fever': 0, 'sore_throat': 1, 'cough': 0, 'head_ache': 1},
+    ]
+
+    cpts = {}
+    set_labels = []
+
+    colors = ['#0072B2', '#D55E00', '#CC79A7', '#009E73']  # Blue, Orange, Pink, Teal
+    hatch_patterns = ['..', '--', 'xx', '++']  # Distinct and clear hatch styles
+
+    # Query CPTs for each evidence set
+    for i, evidence in enumerate(evidence_sets):
+        query = inference.query(variables=[variable], evidence=evidence, show_progress=False)
+        labeled_query = {result_labels[i]: prob for i, prob in enumerate(query.values)}
+        cpts[f'Set {i+1}'] = [labeled_query[label] for label in result_labels]
+        evidence_desc = ', '.join([f'{k}={v}' for k, v in evidence.items()])
+        set_labels.append(f'Set {i+1}: {evidence_desc}')
+
+    # Convert to DataFrame for easy plotting
+    cpts_df = pd.DataFrame(cpts, index=result_labels)
+    print(cpts_df)
+
+    # Plot the CPTs
+    fig, ax = plt.subplots(figsize=(18, 18), dpi=150)
+    bars = cpts_df.plot(kind='bar', ax=ax, color=colors, width=0.8)
+
+    # Add hatching and styling to bars
+    for i, bar in enumerate(bars.containers):
+        for patch in bar:
+            patch.set_hatch(hatch_patterns[i])
+            patch.set_edgecolor('black')
+            patch.set_linewidth(2)
+
+    ax.set_ylabel("Probability", fontsize=20, fontweight='bold')
+    ax.set_title(f'CPTs for {variable} Across Evidence Sets', fontsize=24, fontweight='bold', pad=30)
+    ax.set_xticklabels(result_labels, rotation=0, fontsize=18, fontweight='bold')
+
+    # Custom legend with colored and hatched patches
+    handles = []
+    for i, (color, hatch) in enumerate(zip(colors, hatch_patterns)):
+        patch = mpatches.Patch(
+            facecolor=color,
+            hatch=hatch,
+            edgecolor='black',
+            linewidth=2,
+            label=set_labels[i]
+        )
+        handles.append(patch)
+
+    ax.legend(
+        handles=handles,
+        title="Evidence Set",
+        loc='upper right',
+        bbox_to_anchor=(1, 1),
+        fontsize=18,
+        title_fontsize=20,
+        edgecolor='black',
+        handleheight=3,
+        handlelength=4,
+    )
+
+    plt.tight_layout()
+    plt.show()
+
+```
+![Fig1](Fig3.png)
 ### 4. Evaluate Model Performance
 ```python
 from src.evaluation_metrics import evaluate_model
