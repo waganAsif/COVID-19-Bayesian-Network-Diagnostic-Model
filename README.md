@@ -289,94 +289,146 @@ For each CPD parameter θ:
 - **Robust to Missing Data:** Can handle incomplete patient records
 - **Prior Knowledge Integration:** Incorporates domain expertise through Bayesian estimation
 - **Multiple Inference Options:** Flexibility to choose between exact and approximate methods based on computational constraints
-\# 🧠 Bayesian Disease Modeling Algorithm
 
-This section outlines the process of building and querying a Bayesian Network for COVID-19 diagnosis. It includes defining the network structure, estimating parameters using Dirichlet priors and BDeu scoring, and performing inference via Variable Elimination.
+## Bayesian Disease Modeling Algorithm
 
-\---
 
-\## 📥 Input
 
-\- \`dataset\`: A preprocessed dataset containing symptoms and COVID-19 test results.
+This section provides a detailed theoretical description of the Bayesian Disease Modeling algorithm used for COVID-19 diagnosis. The algorithm leverages Bayesian networks to model the probabilistic relationships between symptoms, test results, and disease states.
 
-\## 📤 Output
+### Algorithm Steps
 
-\- \`result\`: The inference result for a given query and evidence.
+### Step 1: Define Bayesian Network Structure
 
-\---
+The algorithm begins by defining a Bayesian network structure as a directed acyclic graph (DAG):
 
-\## 🔁 Algorithm Steps
-
-\### 1. Define Bayesian Network Structure
-
-Construct the Bayesian Network as a \*\*Directed Acyclic Graph (DAG)\*\*:
-
+```
 G = (V, E)
-
-\- \`V\`: Set of nodes, each representing a symptom, demographic feature, or test result.
-
-\- \`E\`: Set of directed edges representing conditional dependencies.
-
-\---
-
-\### 2. Estimate Model Parameters
-
-Estimate Conditional Probability Distributions (CPDs) using the following Bayesian estimator:
-
-P̂(Xᵢ = k | Parents(Xᵢ) = j) = (Nᵢⱼₖ + α / qᵢ) / (Nᵢⱼ + α · rᵢ / qᵢ)
+```
 
 Where:
+- **V** is the set of nodes representing random variables (symptoms, test results, disease states)
+- **E** is the set of directed edges representing conditional dependencies between variables
 
-\- \`Nᵢⱼₖ\`: Count where \`Xᵢ = k\` and \`Parents(Xᵢ) = j\`
+**Key Components:**
+- **Nodes (X₁, X₂, ..., Xₙ)**: Each node represents a variable in the COVID-19 diagnostic model
+  - Symptom nodes (fever, cough, shortness of breath, etc.)
+  - Test result nodes (RT-PCR, antigen tests, etc.)
+  - Disease state node (COVID-19 positive/negative)
+- **Edges**: Directed connections showing how variables influence each other
+  - Parents → Children relationships define conditional dependencies
+  - No cycles allowed (acyclic property ensures computational tractability)
 
-\- \`Nᵢⱼ\`: Total count for \`Parents(Xᵢ) = j\`
+### Step 2: Parameter Estimation
 
-\- \`α\`: Equivalent sample size (Dirichlet prior)
+The algorithm estimates conditional probability distributions (CPDs) for each node using Bayesian parameter estimation with Dirichlet priors:
 
-\- \`qᵢ\`: Number of possible parent configurations for \`Xᵢ\`
+```
+P̂(Xᵢ = k | Parents(Xᵢ) = j) = (Nᵢⱼₖ + α/qᵢ) / (Nᵢⱼ + α·rᵢ/qᵢ)
+```
 
-\- \`rᵢ\`: Number of possible states of \`Xᵢ\`
+**Parameter Definitions:**
+- **Nᵢⱼₖ**: Count of instances where variable Xᵢ takes value k and its parents take configuration j
+- **Nᵢⱼ**: Total count of instances where parents of Xᵢ take configuration j
+- **α**: Equivalent sample size (hyperparameter controlling the strength of the prior)
+- **qᵢ**: Number of possible parent configurations for variable Xᵢ
+- **rᵢ**: Number of possible states/values for variable Xᵢ
 
-\---
+**Mathematical Interpretation:**
+- The numerator adds a pseudocount (α/qᵢ) to the observed count, implementing Laplace smoothing
+- The denominator normalizes the probability ensuring it sums to 1
+- This approach prevents zero probabilities and provides robust estimates with limited data
 
-\### 3. Perform Inference
+### Step 3: Probabilistic Inference
 
-Perform probabilistic inference using \*\*Variable Elimination\*\*:
+The algorithm performs inference using Variable Elimination to compute posterior probabilities:
 
-P(Query | Evidence) = ∑ₕ P(Query, hidden | Evidence)
+```
+P(Query | Evidence) = Σ_hidden P(Query, hidden | Evidence)
+```
+
+**Inference Process:**
+1. **Query Definition**: Specify the target variable(s) of interest (e.g., COVID-19 status)
+2. **Evidence Setting**: Input observed symptoms and test results
+3. **Marginalization**: Sum over all hidden (unobserved) variables
+4. **Probability Computation**: Calculate the posterior probability of the query given evidence
+
+**Variable Elimination Steps:**
+1. **Factor Creation**: Convert CPDs into factors
+2. **Evidence Integration**: Reduce factors based on observed evidence
+3. **Variable Ordering**: Choose elimination order to minimize computational complexity
+4. **Sequential Elimination**: 
+   - For each variable to eliminate:
+     - Multiply all factors containing that variable
+     - Sum out the variable from the resulting factor
+5. **Final Computation**: Multiply remaining factors and normalize
+
+
+
+### Bayesian Network Joint Distribution
+
+The joint probability distribution of the entire network is given by:
+
+```
+P(X₁, X₂, ..., Xₙ) = ∏ᵢ₌₁ⁿ P(Xᵢ | Parents(Xᵢ))
+```
+
+This factorization exploits conditional independence assumptions to reduce computational complexity.
+
+### Conditional Independence
+
+For any three disjoint sets of nodes A, B, and C in the network:
+- A and B are conditionally independent given C if: P(A | B, C) = P(A | C)
+- This property enables efficient inference and learning algorithms
+
+### Bayes' Theorem Application
+
+The inference process fundamentally applies Bayes' theorem:
+
+```
+P(Disease | Symptoms) = P(Symptoms | Disease) × P(Disease) / P(Symptoms)
+```
 
 Where:
+- **P(Disease | Symptoms)**: Posterior probability (what we want to compute)
+- **P(Symptoms | Disease)**: Likelihood (from the trained model)
+- **P(Disease)**: Prior probability (disease prevalence)
+- **P(Symptoms)**: Marginal probability (normalization constant)
 
-\- \`Query\`: Target variable(s) (e.g., \`corona\_result\`)
+### Algorithm Complexity
 
-\- \`Evidence\`: Observed variables (symptoms or features)
+### Time Complexity
+- **Structure Definition**: O(|V| + |E|)
+- **Parameter Estimation**: O(N × D) where N is dataset size and D is dimensionality
+- **Inference**: O(exp(w)) where w is the treewidth of the elimination order
 
-\- \`hidden\`: Latent variables marginalized during inference
+### Space Complexity
+- **Model Storage**: O(∑ᵢ rᵢ × qᵢ) for storing all CPDs
+- **Inference**: O(max factor size during elimination)
 
-\---
+### Optimization Considerations
 
-\## 💡 Example Use Case
+### Structure Learning
+- The network structure can be learned from data using scoring methods (BIC, AIC)
+- Constraint-based methods can identify conditional independence relationships
 
-\*\*Query:\*\* &#x20;
+### Parameter Optimization
+- Cross-validation can determine optimal hyperparameter α
+- Regularization techniques prevent overfitting with limited data
 
-What is the probability of a positive COVID-19 test given symptoms of fever and sore throat?
+### Inference Optimization
+- Variable ordering heuristics minimize elimination complexity
+- Approximate inference methods (sampling, variational) for large networks
 
-\*\*Evidence:\*\*
+### Clinical Interpretation
 
-\`\`\`json
+The algorithm provides:
+1. **Diagnostic Probabilities**: P(COVID-19 | observed symptoms and tests)
+2. **Uncertainty Quantification**: Confidence intervals and entropy measures
+3. **Feature Importance**: Sensitivity analysis showing which symptoms are most informative
+4. **What-if Analysis**: Counterfactual reasoning for different test scenarios
 
-{
-
-&#x20; "fever": 1,
-
-&#x20; "sore\_throat": 1
-
-}
-
-P(corona\_result = "positive" | fever = 1, sore\_throat = 1)
-
-This algorithm supports robust, interpretable diagnostic reasoning under uncertainty.
-🔬 See the paper for more on the use of Dirichlet priors and BDeu scoring.
+This probabilistic approach naturally handles uncertainty and missing data, making it suitable for real-world diagnostic applications where complete information may not be available.
 
 ###  Build Bayesian Network
 ```python
