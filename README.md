@@ -114,7 +114,181 @@ cleanup_nums = {
 updated_df1 = updated_df.replace(cleanup_nums)
 df_test = df_test.replace(cleanup_nums)
 ```
+# Bayesian Network for Corona Diagnosis - Theoretical Description
 
+This implementation creates a probabilistic graphical model using a Bayesian Network to predict corona test results based on various symptoms and demographic factors. The network models the conditional dependencies between symptoms, patient characteristics, and test outcomes.
+
+## Step-by-Step Theoretical Process
+
+### 1. Network Architecture Definition
+
+The Bayesian Network structure is defined through a directed acyclic graph (DAG) where edges represent causal or correlational relationships:
+
+```python
+architecture = [
+    ("test_date", "corona_result"),
+    ("cough", "corona_result"),
+    ("fever", "corona_result"),
+    ("sore_throat", "corona_result"),
+    ("shortness_of_breath", "corona_result"),
+    ("head_ache", "corona_result"),
+    ("age_60_and_above", "corona_result"),
+    ("test_indication", "corona_result"),
+    ("gender", "corona_result")
+]
+```
+
+**Theoretical Foundation:**
+- Each tuple `(parent, child)` represents a directed edge in the graph
+- All variables point to `corona_result`, creating a "naive Bayes" structure
+- This assumes conditional independence between symptoms given the test result
+- The structure encodes domain knowledge about factors influencing corona diagnosis
+
+### 2. Model Initialization
+
+```python
+model = BayesianModel(architecture)
+```
+
+**Theoretical Basis:**
+- Creates the graph structure without probability distributions
+- Establishes the conditional independence assumptions
+- Prepares the framework for parameter learning
+
+### 3. Parameter Learning with Bayesian Estimation
+
+```python
+model.fit(
+    data=updated_df1,
+    estimator=BayesianEstimator,
+    prior_type="BDeu",
+    equivalent_sample_size=10,
+    complete_samples_only=False
+)
+```
+
+**Theoretical Components:**
+
+#### Bayesian Estimator
+- Uses Bayesian parameter estimation instead of maximum likelihood
+- Incorporates prior knowledge to handle sparse data scenarios
+- Provides more robust estimates when training data is limited
+
+#### BDeu Prior (Bayesian Dirichlet equivalent uniform)
+- **Purpose:** Provides uninformative prior distributions for multinomial parameters
+- **Theory:** Assumes uniform prior over all possible network structures
+- **Advantage:** Works well with sparse data and prevents overfitting
+- **Mathematical Foundation:** Uses Dirichlet distribution as conjugate prior for multinomial likelihood
+
+#### Equivalent Sample Size (ESS = 10)
+- **Concept:** Controls the balance between prior knowledge and observed data
+- **Effect:** Higher values give more weight to prior, lower values trust data more
+- **Choice of 10:** Moderate influence, suitable for datasets with reasonable sample sizes
+- **Mathematical Interpretation:** Equivalent to having 10 "virtual" samples supporting the prior
+
+#### Incomplete Data Handling
+- `complete_samples_only=False` allows learning from partially observed data
+- Uses available information even when some variables are missing
+- Important for real-world medical datasets with missing values
+
+### 4. Model Validation
+
+```python
+print(f'Check model: {model.check_model()}')
+```
+
+**Validation Process:**
+- Verifies the network is a valid DAG (no cycles)
+- Checks that all CPDs are properly normalized
+- Ensures conditional probability tables are consistent
+- Confirms the model satisfies Bayesian network axioms
+
+### 5. Conditional Probability Distribution Analysis
+
+```python
+for cpd in model.get_cpds():
+    print(f'CPT of {cpd.variable}:')
+    print(cpd, '\n')
+```
+
+**Theoretical Significance:**
+- **CPDs (Conditional Probability Distributions):** Core components encoding probabilistic relationships
+- **Root nodes:** Have marginal probability distributions P(X)
+- **Child nodes:** Have conditional distributions P(Y|Parents(Y))
+- **Interpretation:** Each table shows how parent variables influence the child variable
+
+### 6. Inference Engine Setup
+
+The implementation provides three different inference methods:
+
+#### Exact Inference - Variable Elimination
+```python
+inference = VariableElimination(model)
+```
+
+**Theory:**
+- **Algorithm:** Systematically eliminates variables through marginalization and factorization
+- **Guarantee:** Provides exact posterior probabilities
+- **Complexity:** Exponential in treewidth of the graph
+- **Use Case:** When exact answers are required and network size is manageable
+
+#### Approximate Inference - Bayesian Model Sampling
+```python
+BMS_inference = BayesianModelSampling(model)
+```
+
+**Methods Included:**
+- **Likelihood Weighting:** Forward sampling with evidence weighting
+- **Rejection Sampling:** Generate samples and reject those inconsistent with evidence
+- **Theory:** Monte Carlo methods that approximate true posterior distributions
+- **Advantage:** Scales better to larger networks than exact inference
+
+#### Approximate Inference - Gibbs Sampling
+```python
+GS_inference = GibbsSampling(model)
+```
+
+**Theory:**
+- **Algorithm:** Markov Chain Monte Carlo (MCMC) method
+- **Process:** Iteratively samples each variable conditioned on all others
+- **Convergence:** Eventually samples from true posterior distribution
+- **Advantage:** Effective for complex networks with many variables
+
+## Mathematical Foundation
+
+### Joint Probability Factorization
+Given the network structure, the joint probability factors as:
+
+P(test_date, cough, fever, ..., corona_result) = 
+P(corona_result | test_date, cough, fever, sore_throat, shortness_of_breath, head_ache, age_60_and_above, test_indication, gender) ×
+P(test_date) × P(cough) × P(fever) × ... × P(gender)
+
+### Conditional Independence Assumptions
+The naive Bayes structure assumes:
+- P(symptom_i | corona_result, symptom_j) = P(symptom_i | corona_result) for i ≠ j
+- Symptoms are conditionally independent given the corona result
+
+### Bayesian Parameter Update
+For each CPD parameter θ:
+- Prior: θ ~ Dirichlet(α)
+- Likelihood: Data ~ Multinomial(θ)
+- Posterior: θ|Data ~ Dirichlet(α + counts)
+
+## Applications and Use Cases
+
+1. **Diagnostic Support:** Estimate probability of positive corona test given symptoms
+2. **Risk Assessment:** Identify high-risk patient profiles
+3. **Sensitivity Analysis:** Understand which symptoms are most predictive
+4. **Missing Data Handling:** Make predictions even with incomplete patient information
+5. **Decision Support:** Provide probabilistic reasoning for medical decisions
+
+## Advantages of This Approach
+
+- **Probabilistic Reasoning:** Provides uncertainty quantification, not just point predictions
+- **Interpretability:** Clear causal structure and interpretable probability tables
+- **Robust to Missing Data:** Can handle incomplete patient records
+- **Prior Knowledge Integration:** Incorporates domain expertise through Bayesian estimation
+- **Multiple Inference Options:** Flexibility to choose between exact and approximate methods based on computational constraints
 ### 2. Build Bayesian Network
 ```python
 from pgmpy.models import BayesianModel
