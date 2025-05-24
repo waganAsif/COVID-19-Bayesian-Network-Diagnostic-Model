@@ -379,31 +379,31 @@ This module evaluates the predictive performance of Bayesian Network models usin
 This complements the approximate inference module by rigorously assessing model prediction quality on test datasets.
 ## Metrics and Definitions
 
-Let:  
-- \( y_i \) be the true label of the \( i \)-th test instance,  
-- \( \hat{y}_i \) be the predicted label,  
-- \( N \) be the total number of test instances.
+Let  
+- $y_i$ be the true label of the $i$-th test instance  
+- $\hat{y}_i$ be the predicted label  
+- $N$ be the total number of test instances  
 
 ### Accuracy
 
 **Mathematical Formula:**  
 $\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}(\hat{y}_i = y_i)$
 
-where \(\mathbf{1}(\cdot)\) is the indicator function that equals 1 if the condition is true, otherwise 0.
+where $\mathbf{1}(\cdot)$ is the indicator function.
 
 ### Precision (Weighted)
 
 **Mathematical Formula:**  
 $\text{Precision} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FP_c}$
 
-where \(TP_c\) and \(FP_c\) are the true and false positives for class \(c\), and \(w_c\) is the class weight.
+where $TP_c$ and $FP_c$ are true positives and false positives for class $c$, and $w_c$ is the class weight.
 
 ### Recall (Weighted)
 
 **Mathematical Formula:**  
 $\text{Recall} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FN_c}$
 
-where \(FN_c\) is the false negatives for class \(c\).
+where $FN_c$ is the number of false negatives for class $c$.
 
 ### F1 Score (Weighted)
 
@@ -412,7 +412,8 @@ $\text{F1 Score} = \sum_{c \in C} w_c \cdot \frac{2 \times \text{Precision}_c \t
 
 ### Confusion Matrix
 
-A matrix \(M\) where element \(M_{i,j}\) counts instances with true class \(i\) predicted as class \(j\).
+A matrix $M$ where $M_{i,j}$ counts instances with true class $i$ predicted as class $j$.
+
 
 
 
