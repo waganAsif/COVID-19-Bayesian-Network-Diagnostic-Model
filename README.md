@@ -1154,7 +1154,7 @@ An experimental framework for evaluating and comparing approximate inference tec
 
 ### Sampling Methods
 
-### 1. Likelihood Weighting (LW)
+### a. Likelihood Weighting (LW)
 
 Generates samples by sampling non-evidence variables while weighting each sample by the likelihood of the evidence.
 
@@ -1163,14 +1163,14 @@ $P(X = x \mid E = e) \approx \frac{\sum_{i=1}^{N} w_i \cdot \mathbb{I}(X_i = x)}
 
 Where $w_i$ is the weight of the $i$-th sample and $\mathbb{I}(\cdot)$ is the indicator function.
 
-### 2. Rejection Sampling (RS)
+### b. Rejection Sampling (RS)
 
 Discards samples that don't match the evidence $E = e$ and estimates probability from accepted samples.
 
 **Mathematical Formula:**
 $P(X = x \mid E = e) \approx \frac{\text{Number of accepted samples where } X = x}{\text{Total number of accepted samples}}$
 
-### 3. Gibbs Sampling (GS)
+### c. Gibbs Sampling (GS)
 
 Uses Markov Chain Monte Carlo (MCMC) to iteratively sample each variable conditioned on others, approximating the joint distribution after burn-in.
 
