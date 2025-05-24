@@ -60,13 +60,13 @@ All experiments were conducted on a computing environment with the following spe
 ---
 ## Installation
 
-### Step 1: Clone the Repository
+### Step a: Clone the Repository
 ```bash
 git clone https://github.com/username/COVID-19-Bayesian-Network-Diagnostic-Model.git
 cd COVID-19-Bayesian-Network-Diagnostic-Model
 ```
 
-### Step 2: Create Conda Environment
+### Step b: Create Conda Environment
 ```bash
 # Using the provided environment file
 conda env create -f thirdpaper_covid.yml
@@ -138,7 +138,7 @@ architecture = [
 ]
 ```
 
-**Theoretical Foundation:**
+
 - Each tuple `(parent, child)` represents a directed edge in the graph
 - All variables point to `corona_result`, creating a "naive Bayes" structure
 - This assumes conditional independence between symptoms given the test result
@@ -150,7 +150,7 @@ architecture = [
 model = BayesianModel(architecture)
 ```
 
-**Theoretical Basis:**
+
 - Creates the graph structure without probability distributions
 - Establishes the conditional independence assumptions
 - Prepares the framework for parameter learning
@@ -167,7 +167,7 @@ model.fit(
 )
 ```
 
-**Theoretical Components:**
+
 
 #### Bayesian Estimator
 - Uses Bayesian parameter estimation instead of maximum likelihood
@@ -211,7 +211,7 @@ for cpd in model.get_cpds():
     print(cpd, '\n')
 ```
 
-**Theoretical Significance:**
+
 - **CPDs (Conditional Probability Distributions):** Core components encoding probabilistic relationships
 - **Root nodes:** Have marginal probability distributions P(X)
 - **Child nodes:** Have conditional distributions P(Y|Parents(Y))
@@ -226,7 +226,7 @@ The implementation provides three different inference methods:
 inference = VariableElimination(model)
 ```
 
-**Theory:**
+
 - **Algorithm:** Systematically eliminates variables through marginalization and factorization
 - **Guarantee:** Provides exact posterior probabilities
 - **Complexity:** Exponential in treewidth of the graph
@@ -248,13 +248,13 @@ BMS_inference = BayesianModelSampling(model)
 GS_inference = GibbsSampling(model)
 ```
 
-**Theory:**
+
 - **Algorithm:** Markov Chain Monte Carlo (MCMC) method
 - **Process:** Iteratively samples each variable conditioned on all others
 - **Convergence:** Eventually samples from true posterior distribution
 - **Advantage:** Effective for complex networks with many variables
 
-### Mathematical Foundation
+
 
 ### Joint Probability Factorization
 Given the network structure, the joint probability factors as:
@@ -367,7 +367,7 @@ def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
 - **evidences:** Dictionary of observed variables and their values
 - **trail_to_show:** List of nodes to include in the visualization
 
-**Theoretical Foundation:**
+
 - Implements d-separation analysis to determine conditional independence
 - Visualizes the effect of evidence on probabilistic reasoning
 - Demonstrates active vs. blocked information paths in the network
@@ -408,7 +408,7 @@ inference = VariableElimination(model)
 query = inference.query(variables=[end], evidence=evidences, show_progress=False)
 ```
 
-**Theoretical Components:**
+
 
 #### Variable Elimination Algorithm
 - **Process:** Systematically marginalizes out irrelevant variables
@@ -429,7 +429,6 @@ mpl_table = ax1.table(cellText=table, bbox=bbox, cellLoc='center',
                       colLabels=[f'{end} State', f'P({end} | Evidence)'])
 ```
 
-**Visualization Theory:**
 - **Precision:** 4 decimal places for statistical significance
 - **Layout:** Tabular format for easy numerical comparison
 - **Labeling:** Clear column headers indicating variable states and probabilities
@@ -524,12 +523,7 @@ legend_elements = [
 ]
 ```
 
-**Legend Theory:**
-- **Visual Dictionary:** Maps colors and shapes to semantic meaning
-- **Consistency:** Maintains color coding across all visualizations
-- **Accessibility:** Enables interpretation without domain knowledge
 
-### Mathematical Foundation
 
 ### D-Separation Criterion
 For nodes X and Y with evidence set Z:
@@ -553,7 +547,6 @@ P(X, Y | Z) = P(X | Z) × P(Y | Z)  ⟺  X ⊥ Y | Z
 evidences={'sore_throat': 1, 'fever': 1}
 ```
 
-**Theoretical Implications:**
 - Positive symptoms increase posterior probability of positive corona result
 - Red edges indicate active positive evidence paths
 - Demonstrates how multiple symptoms combine probabilistically
@@ -563,7 +556,6 @@ evidences={'sore_throat': 1, 'fever': 1}
 evidences={'sore_throat': 0, 'fever': 0}
 ```
 
-**Theoretical Implications:**
 - Absence of symptoms decreases posterior probability of positive corona result
 - Blue edges indicate active negative evidence paths
 - Shows how negative evidence also provides diagnostic information
@@ -586,7 +578,7 @@ evidences={'sore_throat': 0, 'fever': 0}
 - **Model Understanding:** Provides intuition about network behavior and assumptions
 - **Reproducible Analysis:** Consistent visualization for comparative studies
 
-### Theoretical Significance
+
 
 This visualization method bridges the gap between abstract probabilistic theory and practical application by:
 
