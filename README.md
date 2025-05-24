@@ -454,6 +454,7 @@ df_test_sample = df_test.sample(frac=0.001, random_state=42)
 
 # Run evaluation
 accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(model, df_test_sample, 'corona_result')
+```
 ## Output
 
 - **Predictive Accuracy (%)**: Overall correct classification rate
@@ -468,9 +469,6 @@ accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(mod
 - Analyze class-wise prediction strengths and errors
 - Compare exact inference predictions with approximate methods
 - Support probabilistic decision-making in diagnostic systems
-
-
-
 ## Evaluating Model Performance with Metrics and Confusion Matrix
 
 This function calculates the predictive accuracy, precision, recall, F1 score, and confusion matrix
