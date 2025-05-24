@@ -289,7 +289,95 @@ For each CPD parameter θ:
 - **Robust to Missing Data:** Can handle incomplete patient records
 - **Prior Knowledge Integration:** Incorporates domain expertise through Bayesian estimation
 - **Multiple Inference Options:** Flexibility to choose between exact and approximate methods based on computational constraints
-- 
+\# 🧠 Bayesian Disease Modeling Algorithm
+
+This section outlines the process of building and querying a Bayesian Network for COVID-19 diagnosis. It includes defining the network structure, estimating parameters using Dirichlet priors and BDeu scoring, and performing inference via Variable Elimination.
+
+\---
+
+\## 📥 Input
+
+\- \`dataset\`: A preprocessed dataset containing symptoms and COVID-19 test results.
+
+\## 📤 Output
+
+\- \`result\`: The inference result for a given query and evidence.
+
+\---
+
+\## 🔁 Algorithm Steps
+
+\### 1. Define Bayesian Network Structure
+
+Construct the Bayesian Network as a \*\*Directed Acyclic Graph (DAG)\*\*:
+
+G = (V, E)
+
+\- \`V\`: Set of nodes, each representing a symptom, demographic feature, or test result.
+
+\- \`E\`: Set of directed edges representing conditional dependencies.
+
+\---
+
+\### 2. Estimate Model Parameters
+
+Estimate Conditional Probability Distributions (CPDs) using the following Bayesian estimator:
+
+P̂(Xᵢ = k | Parents(Xᵢ) = j) = (Nᵢⱼₖ + α / qᵢ) / (Nᵢⱼ + α · rᵢ / qᵢ)
+
+Where:
+
+\- \`Nᵢⱼₖ\`: Count where \`Xᵢ = k\` and \`Parents(Xᵢ) = j\`
+
+\- \`Nᵢⱼ\`: Total count for \`Parents(Xᵢ) = j\`
+
+\- \`α\`: Equivalent sample size (Dirichlet prior)
+
+\- \`qᵢ\`: Number of possible parent configurations for \`Xᵢ\`
+
+\- \`rᵢ\`: Number of possible states of \`Xᵢ\`
+
+\---
+
+\### 3. Perform Inference
+
+Perform probabilistic inference using \*\*Variable Elimination\*\*:
+
+P(Query | Evidence) = ∑ₕ P(Query, hidden | Evidence)
+
+Where:
+
+\- \`Query\`: Target variable(s) (e.g., \`corona\_result\`)
+
+\- \`Evidence\`: Observed variables (symptoms or features)
+
+\- \`hidden\`: Latent variables marginalized during inference
+
+\---
+
+\## 💡 Example Use Case
+
+\*\*Query:\*\* &#x20;
+
+What is the probability of a positive COVID-19 test given symptoms of fever and sore throat?
+
+\*\*Evidence:\*\*
+
+\`\`\`json
+
+{
+
+&#x20; "fever": 1,
+
+&#x20; "sore\_throat": 1
+
+}
+
+P(corona\_result = "positive" | fever = 1, sore\_throat = 1)
+
+This algorithm supports robust, interpretable diagnostic reasoning under uncertainty.
+🔬 See the paper for more on the use of Dirichlet priors and BDeu scoring.
+
 ###  Build Bayesian Network
 ```python
 from pgmpy.models import BayesianModel
