@@ -345,7 +345,255 @@ BMS_inference = BayesianModelSampling(model)  # Likelihood weighting and rejecti
 GS_inference = GibbsSampling(model)           # Gibbs sampling
 
 ```
+# Active Trail Visualization for Bayesian Networks - Theoretical Description
 
+## Overview
+
+This implementation provides advanced visualization and analysis capabilities for understanding information flow in Bayesian Networks through active trail analysis. The function combines probabilistic inference with graph visualization to demonstrate how evidence propagates through the network and affects conditional dependencies between variables.
+
+## Step-by-Step Theoretical Process
+
+### 1. Function Definition and Parameters
+
+```python
+def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
+```
+
+**Parameter Analysis:**
+- **model:** The trained Bayesian Network containing learned CPDs
+- **start:** Source node for trail analysis (information origin)
+- **end:** Target node for trail analysis (query variable)
+- **evidences:** Dictionary of observed variables and their values
+- **trail_to_show:** List of nodes to include in the visualization
+
+**Theoretical Foundation:**
+- Implements d-separation analysis to determine conditional independence
+- Visualizes the effect of evidence on probabilistic reasoning
+- Demonstrates active vs. blocked information paths in the network
+
+### 2. Evidence String Formatting
+
+```python
+str_evidences = '| ' if evidences else ''
+for evidence, value in evidences.items():
+    str_evidences += f"{evidence}={value}"
+    if evidence != list(evidences.keys())[-1]:
+        str_evidences += ', '
+title_inference = f'P({end} {str_evidences})'
+```
+
+**Purpose:**
+- Creates human-readable representation of conditional probability queries
+- Formats evidence in standard probabilistic notation P(Y|X=x)
+- Provides clear context for the inference being performed
+
+### 3. Dual Visualization Setup
+
+```python
+fig = plt.figure(figsize=(20, 10))
+ax1, ax2 = fig.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1.2, 1.8]})
+```
+
+**Design Rationale:**
+- **Left Panel (ax1):** Quantitative results (probability table)
+- **Right Panel (ax2):** Qualitative structure (network graph)
+- **Width Ratios:** Optimized for readability of both numerical and graphical information
+- **Integrated View:** Combines probabilistic reasoning with structural understanding
+
+### 4. Bayesian Inference Execution
+
+```python
+inference = VariableElimination(model)
+query = inference.query(variables=[end], evidence=evidences, show_progress=False)
+```
+
+**Theoretical Components:**
+
+#### Variable Elimination Algorithm
+- **Process:** Systematically marginalizes out irrelevant variables
+- **Efficiency:** Exploits conditional independence structure
+- **Output:** Exact posterior probability distribution P(end|evidences)
+
+#### Query Structure
+- **Variables:** Target variable(s) for which we want posterior probabilities
+- **Evidence:** Observed variables that condition the inference
+- **Result:** Conditional probability distribution given evidence
+
+### 5. Probability Table Visualization
+
+```python
+probabilities = [f'{value:.4f}' for value in query.values]
+table = np.column_stack((query.state_names[query.variables[0]], probabilities))
+mpl_table = ax1.table(cellText=table, bbox=bbox, cellLoc='center',
+                      colLabels=[f'{end} State', f'P({end} | Evidence)'])
+```
+
+**Visualization Theory:**
+- **Precision:** 4 decimal places for statistical significance
+- **Layout:** Tabular format for easy numerical comparison
+- **Labeling:** Clear column headers indicating variable states and probabilities
+- **Purpose:** Quantitative assessment of evidence impact on target variable
+
+### 6. Active Trail Analysis
+
+```python
+obs = list(evidences.keys()).copy()
+if start in obs:
+    obs.remove(start)
+active = model.is_active_trail(start=start, end=end, observed=obs)
+```
+
+**D-Separation Theory:**
+
+#### Active Trail Conditions
+An undirected path between two nodes is **active** given evidence if:
+1. **Chain (A → B → C):** B is not observed
+2. **Fork (A ← B → C):** B is not observed  
+3. **Collider (A → B ← C):** B or any descendant of B is observed
+
+#### Trail Blocking
+A trail is **blocked** (inactive) when:
+- Evidence blocks information flow according to d-separation rules
+- Conditional independence is established between start and end nodes
+
+#### Practical Implications
+- **Active Trail:** Start and end variables are conditionally dependent
+- **Inactive Trail:** Start and end variables are conditionally independent
+- **Evidence Impact:** Observing variables can either block or unblock information flow
+
+### 7. Graph Visualization Components
+
+#### Edge Filtering and Coloring
+```python
+trail_edges = [edge for edge in model.edges if edge[0] in trail_to_show and edge[1] in trail_to_show]
+edge_colors = ['#e74c3c' if (edge[0] in evidences and evidences[edge[0]] == 1) else 
+               '#3498db' if (edge[0] in evidences and evidences[edge[0]] == 0) else '#7f8c8d']
+```
+
+**Color Coding Theory:**
+- **Red (#e74c3c):** Evidence present (positive observation)
+- **Blue (#3498db):** Evidence absent (negative observation)
+- **Gray (#7f8c8d):** No evidence (neutral state)
+- **Purpose:** Visual encoding of evidence states for immediate interpretation
+
+#### Node Visualization
+```python
+node_colors = ['#f4d03f' if node in evidences else '#ffffff' for node in trail_to_show]
+node_sizes = [1200 if node in [start, end] else 900 for node in trail_to_show]
+```
+
+**Visual Encoding:**
+- **Yellow Nodes:** Evidence variables (observed)
+- **White Nodes:** Unobserved variables
+- **Large Nodes:** Start and end nodes (query focus)
+- **Standard Nodes:** Intermediate variables
+
+### 8. Network Layout and Annotation
+
+```python
+pos = nx.spring_layout(model, seed=42)
+nx.draw_networkx_edges(model, pos, edgelist=trail_edges, edge_color=edge_colors, width=edge_widths)
+```
+
+**Layout Algorithm:**
+- **Spring Layout:** Force-directed algorithm for aesthetic node positioning
+- **Seed=42:** Reproducible layout across multiple visualizations
+- **Edge Weights:** Visual emphasis based on evidence strength
+
+#### Semantic Annotations
+```python
+ax2.annotate('Start Node', xy=pos[start], xycoords='data',
+             xytext=(-70, 40), textcoords='offset points',
+             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"))
+```
+
+**Annotation Purpose:**
+- **Clear Identification:** Explicitly marks start and end nodes
+- **Directional Arrows:** Shows information flow direction
+- **Contextual Labels:** Reduces cognitive load in interpretation
+
+### 9. Legend and Interpretation Guide
+
+```python
+legend_elements = [
+    plt.Line2D([0], [0], marker='o', color='w', label='Evidence Node (Yellow)', 
+               markerfacecolor='#f4d03f', markersize=12, markeredgecolor='black'),
+    plt.Line2D([0], [0], color='#e74c3c', lw=3.2, label='Edge (Symptom Present - Red)'),
+    # ... additional legend elements
+]
+```
+
+**Legend Theory:**
+- **Visual Dictionary:** Maps colors and shapes to semantic meaning
+- **Consistency:** Maintains color coding across all visualizations
+- **Accessibility:** Enables interpretation without domain knowledge
+
+## Mathematical Foundation
+
+### D-Separation Criterion
+For nodes X and Y with evidence set Z:
+- X ⊥ Y | Z (X independent of Y given Z) if all paths between X and Y are blocked by Z
+- Path blocking follows the three fundamental patterns: chains, forks, and colliders
+
+### Conditional Independence Testing
+```
+P(X, Y | Z) = P(X | Z) × P(Y | Z)  ⟺  X ⊥ Y | Z
+```
+
+### Information Flow Analysis
+- **Active Trails:** Allow probabilistic influence between variables
+- **Blocked Trails:** Establish conditional independence
+- **Evidence Propagation:** Changes in observed variables affect connected unobserved variables
+
+## Example Usage Analysis
+
+### Case 1: Positive Evidence
+```python
+evidences={'sore_throat': 1, 'fever': 1}
+```
+
+**Theoretical Implications:**
+- Positive symptoms increase posterior probability of positive corona result
+- Red edges indicate active positive evidence paths
+- Demonstrates how multiple symptoms combine probabilistically
+
+### Case 2: Negative Evidence
+```python
+evidences={'sore_throat': 0, 'fever': 0}
+```
+
+**Theoretical Implications:**
+- Absence of symptoms decreases posterior probability of positive corona result
+- Blue edges indicate active negative evidence paths
+- Shows how negative evidence also provides diagnostic information
+
+## Applications and Use Cases
+
+1. **Diagnostic Reasoning:** Visualize how symptoms contribute to diagnosis
+2. **Evidence Analysis:** Understand which observations are most informative
+3. **Model Validation:** Verify that learned dependencies make clinical sense
+4. **Educational Tool:** Teach probabilistic reasoning and Bayesian inference
+5. **Sensitivity Analysis:** Explore how different evidence combinations affect conclusions
+6. **Model Debugging:** Identify unexpected conditional dependencies
+
+## Advantages of This Visualization Approach
+
+- **Dual Representation:** Combines quantitative probabilities with qualitative structure
+- **Interactive Analysis:** Easy to modify evidence and observe effects
+- **Educational Value:** Makes abstract probabilistic concepts concrete and visual
+- **Diagnostic Insight:** Reveals how evidence propagates through medical reasoning
+- **Model Understanding:** Provides intuition about network behavior and assumptions
+- **Reproducible Analysis:** Consistent visualization for comparative studies
+
+## Theoretical Significance
+
+This visualization method bridges the gap between abstract probabilistic theory and practical application by:
+
+1. **Making D-Separation Tangible:** Visual representation of complex mathematical concepts
+2. **Demonstrating Evidence Flow:** Shows how information propagates through probabilistic networks
+3. **Validating Model Structure:** Allows verification that learned dependencies align with domain knowledge
+4. **Supporting Decision Making:** Provides interpretable output for clinical or diagnostic applications
+5. **Enhancing Model Trust:** Transparent visualization increases confidence in probabilistic reasoning
 ### 3. Perform Inference
 ```python
 def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
