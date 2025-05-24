@@ -529,7 +529,7 @@ legend_elements = [
 - **Consistency:** Maintains color coding across all visualizations
 - **Accessibility:** Enables interpretation without domain knowledge
 
-## Mathematical Foundation
+### Mathematical Foundation
 
 ### D-Separation Criterion
 For nodes X and Y with evidence set Z:
@@ -546,7 +546,7 @@ P(X, Y | Z) = P(X | Z) × P(Y | Z)  ⟺  X ⊥ Y | Z
 - **Blocked Trails:** Establish conditional independence
 - **Evidence Propagation:** Changes in observed variables affect connected unobserved variables
 
-## Example Usage Analysis
+### Example Usage Analysis
 
 ### Case 1: Positive Evidence
 ```python
@@ -568,7 +568,7 @@ evidences={'sore_throat': 0, 'fever': 0}
 - Blue edges indicate active negative evidence paths
 - Shows how negative evidence also provides diagnostic information
 
-## Applications and Use Cases
+### Applications and Use Cases
 
 1. **Diagnostic Reasoning:** Visualize how symptoms contribute to diagnosis
 2. **Evidence Analysis:** Understand which observations are most informative
@@ -577,7 +577,7 @@ evidences={'sore_throat': 0, 'fever': 0}
 5. **Sensitivity Analysis:** Explore how different evidence combinations affect conclusions
 6. **Model Debugging:** Identify unexpected conditional dependencies
 
-## Advantages of This Visualization Approach
+### Advantages of This Visualization Approach
 
 - **Dual Representation:** Combines quantitative probabilities with qualitative structure
 - **Interactive Analysis:** Easy to modify evidence and observe effects
@@ -586,7 +586,7 @@ evidences={'sore_throat': 0, 'fever': 0}
 - **Model Understanding:** Provides intuition about network behavior and assumptions
 - **Reproducible Analysis:** Consistent visualization for comparative studies
 
-## Theoretical Significance
+### Theoretical Significance
 
 This visualization method bridges the gap between abstract probabilistic theory and practical application by:
 
