@@ -274,7 +274,7 @@ For each CPD parameter θ:
 - Likelihood: Data ~ Multinomial(θ)
 - Posterior: θ|Data ~ Dirichlet(α + counts)
 
-## Applications and Use Cases
+### Applications and Use Cases
 
 1. **Diagnostic Support:** Estimate probability of positive corona test given symptoms
 2. **Risk Assessment:** Identify high-risk patient profiles
@@ -282,7 +282,7 @@ For each CPD parameter θ:
 4. **Missing Data Handling:** Make predictions even with incomplete patient information
 5. **Decision Support:** Provide probabilistic reasoning for medical decisions
 
-## Advantages of This Approach
+### Advantages of This Approach
 
 - **Probabilistic Reasoning:** Provides uncertainty quantification, not just point predictions
 - **Interpretability:** Clear causal structure and interpretable probability tables
@@ -1227,7 +1227,7 @@ results = approximate_inference(
 )
 ```
 
-## Variable Discretization
+### Variable Discretization
 
 The framework uses a predefined mapping dictionary for discretization:
 
