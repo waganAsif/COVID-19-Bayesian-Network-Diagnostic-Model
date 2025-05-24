@@ -681,22 +681,6 @@ The framework computes four standard divergence measures between exact distribut
   $JS(p, q) = \frac{1}{2} D_{KL}(p \parallel m) + \frac{1}{2} D_{KL}(q \parallel m), \text{ where } m = \frac{1}{2}(p + q)$
   A symmetric and smoothed version of KL divergence.
 
-## Installation
-
-### Prerequisites
-
-```bash
-pip install numpy pandas pgmpy
-```
-
-### Required Dependencies
-
-* **numpy:** Numerical computations
-* **pandas:** Data manipulation
-* **pgmpy:** Bayesian Network operations
-* **time:** Performance measurement
-
-## Usage
 
 ### Basic Query Execution
 
