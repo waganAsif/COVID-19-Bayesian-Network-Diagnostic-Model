@@ -417,8 +417,7 @@ A matrix \(M\) where \(M_{i,j}\) counts instances with true class \(i\) predicte
 This function performs exact inference on each test sample to predict the target variable, then calculates classification metrics and the confusion matrix.
 
 ```python
-from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
-from pgmpy.inference import VariableElimination
+
 
 def calculate_metrics_and_confusion_matrix(model, data, actual_var):
     inference = VariableElimination(model)
@@ -443,17 +442,7 @@ def calculate_metrics_and_confusion_matrix(model, data, actual_var):
     f1 = f1_score(true_labels, predicted_labels, average='weighted')
     cm = confusion_matrix(true_labels, predicted_labels)
 
-    print(f'Predictive Accuracy: {accuracy * 100:.2f}%')
-    print(f'Precision: {precision * 100:.2f}%')
-    print(f'Recall: {recall * 100:.2f}%')
-    print(f'F1 Score: {f1 * 100:.2f}%')
-
-    return accuracy * 100, precision * 100, recall * 100, f1 * 100, cm
-# Sample 0.1% of test data to reduce computation
-df_test_sample = df_test.sample(frac=0.001, random_state=42)
-
-# Run evaluation
-accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(model, df_test_sample, 'corona_result')
+   
 ```
 ## Output
 
