@@ -82,7 +82,7 @@ pip install -r requirements.txt
 
 ## Quick Start
 
-### 1. Data Preprocessing
+##  1. Data Preprocessing
 ```python
 # Handle missing values
 df_test['age_60_and_above'].fillna('No', inplace=True)
@@ -114,7 +114,7 @@ cleanup_nums = {
 updated_df1 = updated_df.replace(cleanup_nums)
 df_test = df_test.replace(cleanup_nums)
 ```
-## Bayesian Network for Corona Diagnosis - Theoretical Description
+## 2. Bayesian Network for Corona Diagnosis - Theoretical Description
 
 This implementation creates a probabilistic graphical model using a Bayesian Network to predict corona test results based on various symptoms and demographic factors. The network models the conditional dependencies between symptoms, patient characteristics, and test outcomes.
 
@@ -289,7 +289,8 @@ For each CPD parameter θ:
 - **Robust to Missing Data:** Can handle incomplete patient records
 - **Prior Knowledge Integration:** Incorporates domain expertise through Bayesian estimation
 - **Multiple Inference Options:** Flexibility to choose between exact and approximate methods based on computational constraints
-### 2. Build Bayesian Network
+- 
+###  Build Bayesian Network
 ```python
 from pgmpy.models import BayesianModel
 from pgmpy.estimators import BayesianEstimator
@@ -345,7 +346,7 @@ BMS_inference = BayesianModelSampling(model)  # Likelihood weighting and rejecti
 GS_inference = GibbsSampling(model)           # Gibbs sampling
 
 ```
-## Active Trail Visualization for Bayesian Networks - Theoretical Description
+## 2.  Active Trail Visualization for Bayesian Networks - Theoretical Description
 
 
 
@@ -706,7 +707,7 @@ show_active_trail(
 ```
 ![Fig2](Fig2.png)
 ![Fig3](Fig3.png)
-### 4. Comparing Conditional Probability Tables (CPTs) with Visual Labels
+## 3. Comparing Conditional Probability Tables (CPTs) with Visual Labels
 ```python
 import matplotlib.pyplot as plt
 from pgmpy.inference import VariableElimination
@@ -794,12 +795,12 @@ def compare_cpts_with_labels(model, variable, result_labels):
 
 ```
 ![Fig4](Fig4.png)
-# Predictive Performance Evaluation Module
+## 4. Predictive Performance Evaluation Module
 
 This module evaluates the predictive performance of Bayesian Network models using exact inference and standard classification metrics. It leverages `pgmpy`'s `VariableElimination` for inference and computes **Accuracy**, **Precision**, **Recall**, **F1 Score**, along with the **Confusion Matrix**.
 
 This complements the approximate inference module by rigorously assessing model prediction quality on test datasets.
-## Metrics and Definitions
+### Metrics and Definitions
 
 Let  
 - $y_i$ be the true label of the $i$-th test instance  
@@ -839,8 +840,6 @@ A matrix $M$ where $M_{i,j}$ counts instances with true class $i$ predicted as c
 
 
 
-## Usage
-
 ### Function: `calculate_metrics_and_confusion_matrix`
 
 This function performs exact inference on each test sample to predict the target variable, then calculates classification metrics and the confusion matrix.
@@ -873,7 +872,7 @@ def calculate_metrics_and_confusion_matrix(model, data, actual_var):
 
    
 ```
-## Output
+### Output
 
 - **Predictive Accuracy (%)**: Overall correct classification rate
 - **Precision (%)**: Weighted precision over classes
@@ -881,13 +880,13 @@ def calculate_metrics_and_confusion_matrix(model, data, actual_var):
 - **F1 Score (%)**: Weighted harmonic mean of precision and recall
 - **Confusion Matrix**: Summary of class-wise predictions
 
-## Applications
+### Applications
 
 - Validate Bayesian Network classification performance
 - Analyze class-wise prediction strengths and errors
 - Compare exact inference predictions with approximate methods
 - Support probabilistic decision-making in diagnostic systems
-## Evaluating Model Performance with Metrics and Confusion Matrix
+### Evaluating Model Performance with Metrics and Confusion Matrix
 
 This function calculates the predictive accuracy, precision, recall, F1 score, and confusion matrix
 for a given Bayesian Network model on a test dataset using pgmpy and sklearn.metrics.
@@ -1142,7 +1141,7 @@ plot_roc_curves(inference, df_test_sample)
 ![Fig7](Fig7.png)
 ![Fig8](Fig8.png)
 
-## Inference Methodods
+## 5. Inference Methodods
 An experimental framework for evaluating and comparing approximate inference techniques in Bayesian Networks, including Likelihood Weighting, Rejection Sampling, and Gibbs Sampling. This framework implements three key approximate inference methods for Bayesian Networks and provides comprehensive evaluation metrics to assess their accuracy and computational efficiency. The system is designed to handle both categorical and continuous variables through intelligent discretization and offers detailed performance analysis across different sample sizes.
 
 ### Inference Methodods has been implemented using:
@@ -1153,7 +1152,7 @@ An experimental framework for evaluating and comparing approximate inference tec
 * **Performance Analysis:** Time complexity evaluation and convergence analysis
 * **Batch Experimentation:** Automated testing across multiple sample sizes and trials
 
-## Sampling Methods
+### Sampling Methods
 
 ### 1. Likelihood Weighting (LW)
 
@@ -1175,7 +1174,7 @@ $P(X = x \mid E = e) \approx \frac{\text{Number of accepted samples where } X = 
 
 Uses Markov Chain Monte Carlo (MCMC) to iteratively sample each variable conditioned on others, approximating the joint distribution after burn-in.
 
-## Evaluation Metrics
+## 6. Evaluation Metrics
 
 The framework computes four standard divergence measures between exact distribution $p$ and approximated distribution $q$:
 
@@ -1276,7 +1275,7 @@ Automates experimentation across multiple sample sizes.
 * `prob_RS(samples, variable, query_value)`: Computes rejection sampling probability from filtered samples.
 * `prob_GS(samples, query_variable, query_evidence, query_value)`: Determines Gibbs sampling probability using conditional querying.
 
-## Output Structure
+### Output Structure
 
 The framework returns comprehensive results including:
 
@@ -1285,13 +1284,13 @@ The framework returns comprehensive results including:
 * **Performance Data:** Execution times for computational efficiency analysis
 * **Sample Size Information:** For convergence analysis
 
-## Performance Considerations
+### Performance Considerations
 
 * **Likelihood Weighting:** Fast but may suffer from weight degeneracy
 * **Rejection Sampling:** Simple but inefficient with low evidence probability
 * **Gibbs Sampling:** Good for complex dependencies but requires burn-in period
 
-## Use Cases
+### Use Cases
 
 * **Model Validation:** Compare approximate vs. exact inference results
 * **Method Selection:** Choose optimal sampling method for specific network structures
