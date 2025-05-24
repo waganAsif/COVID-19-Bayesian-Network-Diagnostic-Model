@@ -254,7 +254,7 @@ GS_inference = GibbsSampling(model)
 - **Convergence:** Eventually samples from true posterior distribution
 - **Advantage:** Effective for complex networks with many variables
 
-## Mathematical Foundation
+### Mathematical Foundation
 
 ### Joint Probability Factorization
 Given the network structure, the joint probability factors as:
