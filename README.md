@@ -377,38 +377,42 @@ def compare_cpts_with_labels(model, variable, result_labels):
 This module evaluates the predictive performance of Bayesian Network models using exact inference and standard classification metrics. It leverages `pgmpy`'s `VariableElimination` for inference and computes **Accuracy**, **Precision**, **Recall**, **F1 Score**, along with the **Confusion Matrix**.
 
 This complements the approximate inference module by rigorously assessing model prediction quality on test datasets.
-
 ## Metrics and Definitions
 
-Let:
-- \( y_i \) be the true label of the \( i \)-th test instance,
-- \( \hat{y}_i \) be the predicted label,
+Let:  
+- \( y_i \) be the true label of the \( i \)-th test instance,  
+- \( \hat{y}_i \) be the predicted label,  
 - \( N \) be the total number of test instances.
 
-### Accuracy
-\[
+### Accuracy  
+**Mathematical Formula:**  
+$$
 \text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}(\hat{y}_i = y_i)
-\]
+$$  
 where \(\mathbf{1}(\cdot)\) is the indicator function.
 
-### Precision (Weighted)
-\[
+### Precision (Weighted)  
+**Mathematical Formula:**  
+$$
 \text{Precision} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FP_c}
-\]
-where \(TP_c\) and \(FP_c\) are true and false positives for class \(c\), and \(w_c\) is the class weight.
+$$  
+where \(TP_c\) and \(FP_c\) are true positives and false positives for class \(c\), and \(w_c\) is the class weight.
 
-### Recall (Weighted)
-\[
+### Recall (Weighted)  
+**Mathematical Formula:**  
+$$
 \text{Recall} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FN_c}
-\]
+$$
 
-### F1 Score (Weighted)
-\[
+### F1 Score (Weighted)  
+**Mathematical Formula:**  
+$$
 \text{F1 Score} = \sum_{c \in C} w_c \cdot \frac{2 \times \text{Precision}_c \times \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
-\]
+$$
 
-### Confusion Matrix
+### Confusion Matrix  
 A matrix \(M\) where \(M_{i,j}\) counts instances with true class \(i\) predicted as class \(j\).
+
 
 ## Usage
 
