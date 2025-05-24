@@ -5,23 +5,7 @@ This project applies **Bayesian inference**, **Dirichlet priors**, and the **BDe
 
 ---
 
-## 📂 Table of Contents
 
-* [Code of Conduct](#code-of-conduct)
-* [Getting Started](#getting-started)
-* [How to Contribute](#how-to-contribute)
-* [Development Setup](#development-setup)
-* [Contribution Guidelines](#contribution-guidelines)
-* [Model Development Guidelines (Updated)](#model-development-guidelines-updated)
-* [Data Handling Guidelines](#data-handling-guidelines)
-* [Testing](#testing)
-* [Documentation](#documentation)
-* [Submitting Changes](#submitting-changes)
-* [Review Process](#review-process)
-* [Model Performance Standards (Updated)](#model-performance-standards-updated)
-* [Questions and Support](#questions-and-support)
-* [Recognition](#recognition)
-* [License](#license)
 
 ---
 
@@ -111,5 +95,5 @@ To be accepted, new or modified models must maintain or exceed:
 
 ---
 
-(For the rest of the content like setup, documentation, testing, etc., see the original `CONTRIBUTING.md` file.)
+
 
