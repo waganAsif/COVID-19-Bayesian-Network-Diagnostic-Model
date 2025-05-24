@@ -80,7 +80,7 @@ conda activate thirdpaper
 pip install -r requirements.txt
 ```
 
-## Quick Start
+
 
 ##  1. Data Preprocessing
 ```python
@@ -120,7 +120,7 @@ This implementation creates a probabilistic graphical model using a Bayesian Net
 
 ### Step-by-Step Theoretical Process
 
-### 1. Network Architecture Definition
+### a. Network Architecture Definition
 
 The Bayesian Network structure is defined through a directed acyclic graph (DAG) where edges represent causal or correlational relationships:
 
@@ -144,7 +144,7 @@ architecture = [
 - This assumes conditional independence between symptoms given the test result
 - The structure encodes domain knowledge about factors influencing corona diagnosis
 
-### 2. Model Initialization
+### b. Model Initialization
 
 ```python
 model = BayesianModel(architecture)
@@ -155,7 +155,7 @@ model = BayesianModel(architecture)
 - Establishes the conditional independence assumptions
 - Prepares the framework for parameter learning
 
-### 3. Parameter Learning with Bayesian Estimation
+### c. Parameter Learning with Bayesian Estimation
 
 ```python
 model.fit(
@@ -191,7 +191,7 @@ model.fit(
 - Uses available information even when some variables are missing
 - Important for real-world medical datasets with missing values
 
-### 4. Model Validation
+### d. Model Validation
 
 ```python
 print(f'Check model: {model.check_model()}')
@@ -203,7 +203,7 @@ print(f'Check model: {model.check_model()}')
 - Ensures conditional probability tables are consistent
 - Confirms the model satisfies Bayesian network axioms
 
-### 5. Conditional Probability Distribution Analysis
+### e. Conditional Probability Distribution Analysis
 
 ```python
 for cpd in model.get_cpds():
@@ -217,7 +217,7 @@ for cpd in model.get_cpds():
 - **Child nodes:** Have conditional distributions P(Y|Parents(Y))
 - **Interpretation:** Each table shows how parent variables influence the child variable
 
-### 6. Inference Engine Setup
+### f. Inference Engine Setup
 
 The implementation provides three different inference methods:
 
@@ -354,7 +354,7 @@ This implementation provides advanced visualization and analysis capabilities fo
 
 ### Step-by-Step Theoretical Process
 
-### 1. Function Definition and Parameters
+### a. Function Definition and Parameters
 
 ```python
 def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
@@ -372,7 +372,7 @@ def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
 - Visualizes the effect of evidence on probabilistic reasoning
 - Demonstrates active vs. blocked information paths in the network
 
-### 2. Evidence String Formatting
+### b. Evidence String Formatting
 
 ```python
 str_evidences = '| ' if evidences else ''
@@ -388,7 +388,7 @@ title_inference = f'P({end} {str_evidences})'
 - Formats evidence in standard probabilistic notation P(Y|X=x)
 - Provides clear context for the inference being performed
 
-### 3. Dual Visualization Setup
+### c. Dual Visualization Setup
 
 ```python
 fig = plt.figure(figsize=(20, 10))
@@ -401,7 +401,7 @@ ax1, ax2 = fig.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1.2, 1.8
 - **Width Ratios:** Optimized for readability of both numerical and graphical information
 - **Integrated View:** Combines probabilistic reasoning with structural understanding
 
-### 4. Bayesian Inference Execution
+### d. Bayesian Inference Execution
 
 ```python
 inference = VariableElimination(model)
@@ -420,7 +420,7 @@ query = inference.query(variables=[end], evidence=evidences, show_progress=False
 - **Evidence:** Observed variables that condition the inference
 - **Result:** Conditional probability distribution given evidence
 
-### 5. Probability Table Visualization
+### e. Probability Table Visualization
 
 ```python
 probabilities = [f'{value:.4f}' for value in query.values]
@@ -435,7 +435,7 @@ mpl_table = ax1.table(cellText=table, bbox=bbox, cellLoc='center',
 - **Labeling:** Clear column headers indicating variable states and probabilities
 - **Purpose:** Quantitative assessment of evidence impact on target variable
 
-### 6. Active Trail Analysis
+### f. Active Trail Analysis
 
 ```python
 obs = list(evidences.keys()).copy()
@@ -462,7 +462,7 @@ A trail is **blocked** (inactive) when:
 - **Inactive Trail:** Start and end variables are conditionally independent
 - **Evidence Impact:** Observing variables can either block or unblock information flow
 
-### 7. Graph Visualization Components
+### g. Graph Visualization Components
 
 #### Edge Filtering and Coloring
 ```python
@@ -489,7 +489,7 @@ node_sizes = [1200 if node in [start, end] else 900 for node in trail_to_show]
 - **Large Nodes:** Start and end nodes (query focus)
 - **Standard Nodes:** Intermediate variables
 
-### 8. Network Layout and Annotation
+### h. Network Layout and Annotation
 
 ```python
 pos = nx.spring_layout(model, seed=42)
@@ -513,7 +513,7 @@ ax2.annotate('Start Node', xy=pos[start], xycoords='data',
 - **Directional Arrows:** Shows information flow direction
 - **Contextual Labels:** Reduces cognitive load in interpretation
 
-### 9. Legend and Interpretation Guide
+### i. Legend and Interpretation Guide
 
 ```python
 legend_elements = [
