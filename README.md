@@ -372,6 +372,104 @@ def compare_cpts_with_labels(model, variable, result_labels):
 
 ```
 ![Fig4](Fig4.png)
+# Predictive Performance Evaluation Module
+
+This module evaluates the predictive performance of Bayesian Network models using exact inference and standard classification metrics. It leverages `pgmpy`'s `VariableElimination` for inference and computes **Accuracy**, **Precision**, **Recall**, **F1 Score**, along with the **Confusion Matrix**.
+
+This complements the approximate inference module by rigorously assessing model prediction quality on test datasets.
+
+## Metrics and Definitions
+
+Let:
+- \( y_i \) be the true label of the \( i \)-th test instance,
+- \( \hat{y}_i \) be the predicted label,
+- \( N \) be the total number of test instances.
+
+### Accuracy
+\[
+\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}(\hat{y}_i = y_i)
+\]
+where \(\mathbf{1}(\cdot)\) is the indicator function.
+
+### Precision (Weighted)
+\[
+\text{Precision} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FP_c}
+\]
+where \(TP_c\) and \(FP_c\) are true and false positives for class \(c\), and \(w_c\) is the class weight.
+
+### Recall (Weighted)
+\[
+\text{Recall} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FN_c}
+\]
+
+### F1 Score (Weighted)
+\[
+\text{F1 Score} = \sum_{c \in C} w_c \cdot \frac{2 \times \text{Precision}_c \times \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+\]
+
+### Confusion Matrix
+A matrix \(M\) where \(M_{i,j}\) counts instances with true class \(i\) predicted as class \(j\).
+
+## Usage
+
+### Function: `calculate_metrics_and_confusion_matrix`
+
+This function performs exact inference on each test sample to predict the target variable, then calculates classification metrics and the confusion matrix.
+
+```python
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+from pgmpy.inference import VariableElimination
+
+def calculate_metrics_and_confusion_matrix(model, data, actual_var):
+    inference = VariableElimination(model)
+    correct_predictions = 0
+    true_labels = []
+    predicted_labels = []
+
+    for i, row in data.iterrows():
+        evidence = row.drop(actual_var).to_dict()
+        actual = row[actual_var]
+        query = inference.map_query(variables=[actual_var], evidence=evidence, show_progress=False)
+        
+        true_labels.append(actual)
+        predicted_labels.append(query[actual_var])
+        
+        if query[actual_var] == actual:
+            correct_predictions += 1
+
+    accuracy = correct_predictions / len(data)
+    precision = precision_score(true_labels, predicted_labels, average='weighted')
+    recall = recall_score(true_labels, predicted_labels, average='weighted')
+    f1 = f1_score(true_labels, predicted_labels, average='weighted')
+    cm = confusion_matrix(true_labels, predicted_labels)
+
+    print(f'Predictive Accuracy: {accuracy * 100:.2f}%')
+    print(f'Precision: {precision * 100:.2f}%')
+    print(f'Recall: {recall * 100:.2f}%')
+    print(f'F1 Score: {f1 * 100:.2f}%')
+
+    return accuracy * 100, precision * 100, recall * 100, f1 * 100, cm
+# Sample 0.1% of test data to reduce computation
+df_test_sample = df_test.sample(frac=0.001, random_state=42)
+
+# Run evaluation
+accuracy, precision, recall, f1, cm = calculate_metrics_and_confusion_matrix(model, df_test_sample, 'corona_result')
+## Output
+
+- **Predictive Accuracy (%)**: Overall correct classification rate
+- **Precision (%)**: Weighted precision over classes
+- **Recall (%)**: Weighted recall over classes
+- **F1 Score (%)**: Weighted harmonic mean of precision and recall
+- **Confusion Matrix**: Summary of class-wise predictions
+
+## Applications
+
+- Validate Bayesian Network classification performance
+- Analyze class-wise prediction strengths and errors
+- Compare exact inference predictions with approximate methods
+- Support probabilistic decision-making in diagnostic systems
+
+
 
 ## Evaluating Model Performance with Metrics and Confusion Matrix
 
