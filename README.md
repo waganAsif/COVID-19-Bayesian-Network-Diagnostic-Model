@@ -372,36 +372,8 @@ def show_active_trail(model, start, end, evidences={}, trail_to_show=[]):
 - Visualizes the effect of evidence on probabilistic reasoning
 - Demonstrates active vs. blocked information paths in the network
 
-### b. Evidence String Formatting
 
-```python
-str_evidences = '| ' if evidences else ''
-for evidence, value in evidences.items():
-    str_evidences += f"{evidence}={value}"
-    if evidence != list(evidences.keys())[-1]:
-        str_evidences += ', '
-title_inference = f'P({end} {str_evidences})'
-```
-
-**Purpose:**
-- Creates human-readable representation of conditional probability queries
-- Formats evidence in standard probabilistic notation P(Y|X=x)
-- Provides clear context for the inference being performed
-
-### c. Dual Visualization Setup
-
-```python
-fig = plt.figure(figsize=(20, 10))
-ax1, ax2 = fig.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1.2, 1.8]})
-```
-
-**Design Rationale:**
-- **Left Panel (ax1):** Quantitative results (probability table)
-- **Right Panel (ax2):** Qualitative structure (network graph)
-- **Width Ratios:** Optimized for readability of both numerical and graphical information
-- **Integrated View:** Combines probabilistic reasoning with structural understanding
-
-### d. Bayesian Inference Execution
+### b. Bayesian Inference Execution
 
 ```python
 inference = VariableElimination(model)
@@ -420,21 +392,8 @@ query = inference.query(variables=[end], evidence=evidences, show_progress=False
 - **Evidence:** Observed variables that condition the inference
 - **Result:** Conditional probability distribution given evidence
 
-### e. Probability Table Visualization
 
-```python
-probabilities = [f'{value:.4f}' for value in query.values]
-table = np.column_stack((query.state_names[query.variables[0]], probabilities))
-mpl_table = ax1.table(cellText=table, bbox=bbox, cellLoc='center',
-                      colLabels=[f'{end} State', f'P({end} | Evidence)'])
-```
-
-- **Precision:** 4 decimal places for statistical significance
-- **Layout:** Tabular format for easy numerical comparison
-- **Labeling:** Clear column headers indicating variable states and probabilities
-- **Purpose:** Quantitative assessment of evidence impact on target variable
-
-### f. Active Trail Analysis
+### c. Active Trail Analysis
 
 ```python
 obs = list(evidences.keys()).copy()
@@ -460,69 +419,6 @@ A trail is **blocked** (inactive) when:
 - **Active Trail:** Start and end variables are conditionally dependent
 - **Inactive Trail:** Start and end variables are conditionally independent
 - **Evidence Impact:** Observing variables can either block or unblock information flow
-
-### g. Graph Visualization Components
-
-#### Edge Filtering and Coloring
-```python
-trail_edges = [edge for edge in model.edges if edge[0] in trail_to_show and edge[1] in trail_to_show]
-edge_colors = ['#e74c3c' if (edge[0] in evidences and evidences[edge[0]] == 1) else 
-               '#3498db' if (edge[0] in evidences and evidences[edge[0]] == 0) else '#7f8c8d']
-```
-
-**Color Coding Theory:**
-- **Red (#e74c3c):** Evidence present (positive observation)
-- **Blue (#3498db):** Evidence absent (negative observation)
-- **Gray (#7f8c8d):** No evidence (neutral state)
-- **Purpose:** Visual encoding of evidence states for immediate interpretation
-
-#### Node Visualization
-```python
-node_colors = ['#f4d03f' if node in evidences else '#ffffff' for node in trail_to_show]
-node_sizes = [1200 if node in [start, end] else 900 for node in trail_to_show]
-```
-
-**Visual Encoding:**
-- **Yellow Nodes:** Evidence variables (observed)
-- **White Nodes:** Unobserved variables
-- **Large Nodes:** Start and end nodes (query focus)
-- **Standard Nodes:** Intermediate variables
-
-### h. Network Layout and Annotation
-
-```python
-pos = nx.spring_layout(model, seed=42)
-nx.draw_networkx_edges(model, pos, edgelist=trail_edges, edge_color=edge_colors, width=edge_widths)
-```
-
-**Layout Algorithm:**
-- **Spring Layout:** Force-directed algorithm for aesthetic node positioning
-- **Seed=42:** Reproducible layout across multiple visualizations
-- **Edge Weights:** Visual emphasis based on evidence strength
-
-#### Semantic Annotations
-```python
-ax2.annotate('Start Node', xy=pos[start], xycoords='data',
-             xytext=(-70, 40), textcoords='offset points',
-             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"))
-```
-
-**Annotation Purpose:**
-- **Clear Identification:** Explicitly marks start and end nodes
-- **Directional Arrows:** Shows information flow direction
-- **Contextual Labels:** Reduces cognitive load in interpretation
-
-### i. Legend and Interpretation Guide
-
-```python
-legend_elements = [
-    plt.Line2D([0], [0], marker='o', color='w', label='Evidence Node (Yellow)', 
-               markerfacecolor='#f4d03f', markersize=12, markeredgecolor='black'),
-    plt.Line2D([0], [0], color='#e74c3c', lw=3.2, label='Edge (Symptom Present - Red)'),
-    # ... additional legend elements
-]
-```
-
 
 
 ### D-Separation Criterion
