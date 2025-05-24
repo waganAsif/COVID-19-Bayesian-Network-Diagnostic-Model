@@ -384,34 +384,36 @@ Let:
 - \( \hat{y}_i \) be the predicted label,  
 - \( N \) be the total number of test instances.
 
-### Accuracy  
-**Mathematical Formula:**  
-$$
-\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}(\hat{y}_i = y_i)
-$$  
-where \(\mathbf{1}(\cdot)\) is the indicator function.
+### Accuracy
 
-### Precision (Weighted)  
 **Mathematical Formula:**  
-$$
-\text{Precision} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FP_c}
-$$  
-where \(TP_c\) and \(FP_c\) are true positives and false positives for class \(c\), and \(w_c\) is the class weight.
+$\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}(\hat{y}_i = y_i)$
 
-### Recall (Weighted)  
+where \(\mathbf{1}(\cdot)\) is the indicator function that equals 1 if the condition is true, otherwise 0.
+
+### Precision (Weighted)
+
 **Mathematical Formula:**  
-$$
-\text{Recall} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FN_c}
-$$
+$\text{Precision} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FP_c}$
 
-### F1 Score (Weighted)  
+where \(TP_c\) and \(FP_c\) are the true and false positives for class \(c\), and \(w_c\) is the class weight.
+
+### Recall (Weighted)
+
 **Mathematical Formula:**  
-$$
-\text{F1 Score} = \sum_{c \in C} w_c \cdot \frac{2 \times \text{Precision}_c \times \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
-$$
+$\text{Recall} = \sum_{c \in C} w_c \cdot \frac{TP_c}{TP_c + FN_c}$
 
-### Confusion Matrix  
-A matrix \(M\) where \(M_{i,j}\) counts instances with true class \(i\) predicted as class \(j\).
+where \(FN_c\) is the false negatives for class \(c\).
+
+### F1 Score (Weighted)
+
+**Mathematical Formula:**  
+$\text{F1 Score} = \sum_{c \in C} w_c \cdot \frac{2 \times \text{Precision}_c \times \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}$
+
+### Confusion Matrix
+
+A matrix \(M\) where element \(M_{i,j}\) counts instances with true class \(i\) predicted as class \(j\).
+
 
 
 ## Usage
