@@ -629,58 +629,85 @@ plot_roc_curves(inference, df_test_sample)
 ![Fig8](Fig8.png)
 
 ## Inference Methodods
+# Bayesian Network Approximate Inference Framework
 
-Bayesian Network Approximate Inference Framework
 An experimental framework for evaluating and comparing approximate inference techniques in Bayesian Networks, including Likelihood Weighting, Rejection Sampling, and Gibbs Sampling.
 
+## Overview
+
 This framework implements three key approximate inference methods for Bayesian Networks and provides comprehensive evaluation metrics to assess their accuracy and computational efficiency. The system is designed to handle both categorical and continuous variables through intelligent discretization and offers detailed performance analysis across different sample sizes.
-Features
 
-Three Sampling Methods: Implementation of Likelihood Weighting (LW), Rejection Sampling (RS), and Gibbs Sampling (GS)
-Automatic Discretization: Handles mixed variable types through predefined mapping dictionaries
-Comprehensive Evaluation: Four standard divergence measures for accuracy assessment
-Performance Analysis: Time complexity evaluation and convergence analysis
-Batch Experimentation: Automated testing across multiple sample sizes and trials
+## Features
 
-Sampling Methods
-1. Likelihood Weighting (LW)
+* **Three Sampling Methods:** Implementation of Likelihood Weighting (LW), Rejection Sampling (RS), and Gibbs Sampling (GS)
+* **Automatic Discretization:** Handles mixed variable types through predefined mapping dictionaries
+* **Comprehensive Evaluation:** Four standard divergence measures for accuracy assessment
+* **Performance Analysis:** Time complexity evaluation and convergence analysis
+* **Batch Experimentation:** Automated testing across multiple sample sizes and trials
+
+## Sampling Methods
+
+### 1. Likelihood Weighting (LW)
+
 Generates samples by sampling non-evidence variables while weighting each sample by the likelihood of the evidence.
-Mathematical Formula:
-P(X=x|E=e) ≈ Σᵢ₌₁ᴺ wᵢ · I(Xᵢ=x) / Σᵢ₌₁ᴺ wᵢ
-Where wᵢ is the weight of the i-th sample and I(·) is the indicator function.
-2. Rejection Sampling (RS)
-Discards samples that don't match the evidence E=e and estimates probability from accepted samples.
-Mathematical Formula:
-P(X=x|E=e) ≈ Number of accepted samples where X=x / Total number of accepted samples
-3. Gibbs Sampling (GS)
+
+**Mathematical Formula:**
+$P(X = x \mid E = e) \approx \frac{\sum_{i=1}^{N} w_i \cdot \mathbb{I}(X_i = x)}{\sum_{i=1}^{N} w_i}$
+
+Where $w_i$ is the weight of the $i$-th sample and $\mathbb{I}(\cdot)$ is the indicator function.
+
+### 2. Rejection Sampling (RS)
+
+Discards samples that don't match the evidence $E = e$ and estimates probability from accepted samples.
+
+**Mathematical Formula:**
+$P(X = x \mid E = e) \approx \frac{\text{Number of accepted samples where } X = x}{\text{Total number of accepted samples}}$
+
+### 3. Gibbs Sampling (GS)
+
 Uses Markov Chain Monte Carlo (MCMC) to iteratively sample each variable conditioned on others, approximating the joint distribution after burn-in.
-Evaluation Metrics
-The framework computes four standard divergence measures between exact distribution p and approximated distribution q:
-Kullback-Leibler Divergence (KL)
-D_KL(p‖q) = Σᵢ p(i) log(p(i)/q(i))
-Measures information loss when q approximates p.
-Total Variation Distance (TV)
-D_TV(p,q) = ½ Σᵢ |p(i) - q(i)|
-Measures the maximum difference between probabilities.
-Hellinger Distance (HD)
-H(p,q) = (1/√2) √(Σᵢ (√p(i) - √q(i))²)
-Quantifies geometric distance between probability distributions.
-Jensen-Shannon Divergence (JS)
-JS(p,q) = ½ D_KL(p‖m) + ½ D_KL(q‖m), where m = ½(p+q)
-A symmetric and smoothed version of KL divergence.
-Installation
-Prerequisites
-bashpip install numpy pandas pgmpy
-Required Dependencies
 
-numpy: Numerical computations
-pandas: Data manipulation
-pgmpy: Bayesian Network operations
-time: Performance measurement
+## Evaluation Metrics
 
-Usage
-Basic Query Execution
-python# Define query parameters
+The framework computes four standard divergence measures between exact distribution $p$ and approximated distribution $q$:
+
+* **Kullback-Leibler Divergence (KL)**
+  $D_{KL}(p \parallel q) = \sum_i p(i) \log \frac{p(i)}{q(i)}$
+  Measures information loss when $q$ approximates $p$.
+
+* **Total Variation Distance (TV)**
+  $D_{TV}(p, q) = \frac{1}{2} \sum_i |p(i) - q(i)|$
+  Measures the maximum difference between probabilities.
+
+* **Hellinger Distance (HD)**
+  $H(p, q) = \frac{1}{\sqrt{2}} \sqrt{\sum_i (\sqrt{p(i)} - \sqrt{q(i)})^2}$
+  Quantifies geometric distance between probability distributions.
+
+* **Jensen-Shannon Divergence (JS)**
+  $JS(p, q) = \frac{1}{2} D_{KL}(p \parallel m) + \frac{1}{2} D_{KL}(q \parallel m), \text{ where } m = \frac{1}{2}(p + q)$
+  A symmetric and smoothed version of KL divergence.
+
+## Installation
+
+### Prerequisites
+
+```bash
+pip install numpy pandas pgmpy
+```
+
+### Required Dependencies
+
+* **numpy:** Numerical computations
+* **pandas:** Data manipulation
+* **pgmpy:** Bayesian Network operations
+* **time:** Performance measurement
+
+## Usage
+
+### Basic Query Execution
+
+```python
+# Define query parameters
 query_variable = ['VariableName']
 query_evidence = {'EvidenceVar1': 'value1', 'EvidenceVar2': 'value2'}
 query_value = 'target_value'
@@ -692,8 +719,12 @@ results = run_experiment(
     query_evidence=query_evidence,
     query_value=query_value
 )
-Batch Experimentation
-python# Run comprehensive analysis across multiple sample sizes
+```
+
+### Batch Experimentation
+
+```python
+# Run comprehensive analysis across multiple sample sizes
 results = approximate_inference(
     q=your_query,
     query_var=query_variable,
@@ -703,66 +734,78 @@ results = approximate_inference(
     final_size=5,       # 10^5 = 100,000 samples
     experiments=10      # Number of trials per sample size
 )
-Variable Discretization
+```
+
+## Variable Discretization
+
 The framework uses a predefined mapping dictionary for discretization:
-pythondiscretization_dict = {
+
+```python
+discretization_dict = {
     True: 1, False: 0,
     '0-15': 0, '16-45': 1, '46-90': 2,
     '1': 0, '2': 1, '3': 2, '4': 3, '5': 4,
     'sv': 0, '<=5': 1, '5.5-6.5': 2, '7-9.5': 3, '>=10': 4
 }
-API Reference
-Core Functions
-run_experiment(sample_size, query_variable, query_evidence, query_value)
+```
+
+## API Reference
+
+### Core Functions
+
+#### `run_experiment(sample_size, query_variable, query_evidence, query_value)`
+
 Executes a complete sampling experiment using all three methods.
-Parameters:
 
-sample_size (int): Number of samples to generate
-query_variable (list): Target variable for probability estimation
-query_evidence (dict): Evidence variables and their values
-query_value (str): Target value for the query variable
+**Parameters:**
 
-Returns:
+* `sample_size (int)`: Number of samples to generate
+* `query_variable (list)`: Target variable for probability estimation
+* `query_evidence (dict)`: Evidence variables and their values
+* `query_value (str)`: Target value for the query variable
 
+**Returns:**
 Structured array containing probabilities, divergence metrics, and execution times
 
-approximate_inference(q, query_var, query_evidence, query_value, starting_size, final_size, experiments)
+#### `approximate_inference(q, query_var, query_evidence, query_value, starting_size, final_size, experiments)`
+
 Automates experimentation across multiple sample sizes.
-Parameters:
 
-starting_size (float): Starting exponent for sample size (10^starting_size)
-final_size (float): Final exponent for sample size (10^final_size)
-experiments (int): Number of trials per sample size
+**Parameters:**
 
-Utility Functions
-discretization(x, value)
-Converts continuous or categorical values to discrete indices for CPT access.
-prob_LW(samples, variable, query_value)
-Calculates likelihood weighting probability from weighted samples.
-prob_RS(samples, variable, query_value)
-Computes rejection sampling probability from filtered samples.
-prob_GS(samples, query_variable, query_evidence, query_value)
-Determines Gibbs sampling probability using conditional querying.
-Output Structure
+* `starting_size (float)`: Starting exponent for sample size (10^starting\_size)
+* `final_size (float)`: Final exponent for sample size (10^final\_size)
+* `experiments (int)`: Number of trials per sample size
+
+### Utility Functions
+
+* `discretization(x, value)`: Converts continuous or categorical values to discrete indices for CPT access.
+* `prob_LW(samples, variable, query_value)`: Calculates likelihood weighting probability from weighted samples.
+* `prob_RS(samples, variable, query_value)`: Computes rejection sampling probability from filtered samples.
+* `prob_GS(samples, query_variable, query_evidence, query_value)`: Determines Gibbs sampling probability using conditional querying.
+
+## Output Structure
+
 The framework returns comprehensive results including:
 
-Probability Estimates: Approximated probabilities for each method
-Divergence Metrics: KL, TV, HD, and JS measures for accuracy assessment
-Performance Data: Execution times for computational efficiency analysis
-Sample Size Information: For convergence analysis
+* **Probability Estimates:** Approximated probabilities for each method
+* **Divergence Metrics:** KL, TV, HD, and JS measures for accuracy assessment
+* **Performance Data:** Execution times for computational efficiency analysis
+* **Sample Size Information:** For convergence analysis
 
-Performance Considerations
+## Performance Considerations
 
-Likelihood Weighting: Fast but may suffer from weight degeneracy
-Rejection Sampling: Simple but inefficient with low evidence probability
-Gibbs Sampling: Good for complex dependencies but requires burn-in period
+* **Likelihood Weighting:** Fast but may suffer from weight degeneracy
+* **Rejection Sampling:** Simple but inefficient with low evidence probability
+* **Gibbs Sampling:** Good for complex dependencies but requires burn-in period
 
-Use Cases
+## Use Cases
 
-Model Validation: Compare approximate vs. exact inference results
-Method Selection: Choose optimal sampling method for specific network structures
-Performance Benchmarking: Evaluate computational trade-offs
-Research: Analyze convergence properties and accuracy patterns
+* **Model Validation:** Compare approximate vs. exact inference results
+* **Method Selection:** Choose optimal sampling method for specific network structures
+* **Performance Benchmarking:** Evaluate computational trade-offs
+* **Research:** Analyze convergence properties and accuracy patterns
+
 
 ### Running Inference Comparison
 ```python
