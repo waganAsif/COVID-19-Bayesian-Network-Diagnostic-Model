@@ -114,11 +114,11 @@ cleanup_nums = {
 updated_df1 = updated_df.replace(cleanup_nums)
 df_test = df_test.replace(cleanup_nums)
 ```
-# Bayesian Network for Corona Diagnosis - Theoretical Description
+## Bayesian Network for Corona Diagnosis - Theoretical Description
 
 This implementation creates a probabilistic graphical model using a Bayesian Network to predict corona test results based on various symptoms and demographic factors. The network models the conditional dependencies between symptoms, patient characteristics, and test outcomes.
 
-## Step-by-Step Theoretical Process
+### Step-by-Step Theoretical Process
 
 ### 1. Network Architecture Definition
 
@@ -345,13 +345,13 @@ BMS_inference = BayesianModelSampling(model)  # Likelihood weighting and rejecti
 GS_inference = GibbsSampling(model)           # Gibbs sampling
 
 ```
-# Active Trail Visualization for Bayesian Networks - Theoretical Description
+## Active Trail Visualization for Bayesian Networks - Theoretical Description
 
-## Overview
+
 
 This implementation provides advanced visualization and analysis capabilities for understanding information flow in Bayesian Networks through active trail analysis. The function combines probabilistic inference with graph visualization to demonstrate how evidence propagates through the network and affects conditional dependencies between variables.
 
-## Step-by-Step Theoretical Process
+### Step-by-Step Theoretical Process
 
 ### 1. Function Definition and Parameters
 
