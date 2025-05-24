@@ -629,13 +629,7 @@ plot_roc_curves(inference, df_test_sample)
 ![Fig8](Fig8.png)
 
 ## Inference Methodods
-
-
-An experimental framework for evaluating and comparing approximate inference techniques in Bayesian Networks, including Likelihood Weighting, Rejection Sampling, and Gibbs Sampling.
-
-## Overview
-
-This framework implements three key approximate inference methods for Bayesian Networks and provides comprehensive evaluation metrics to assess their accuracy and computational efficiency. The system is designed to handle both categorical and continuous variables through intelligent discretization and offers detailed performance analysis across different sample sizes.
+An experimental framework for evaluating and comparing approximate inference techniques in Bayesian Networks, including Likelihood Weighting, Rejection Sampling, and Gibbs Sampling. This framework implements three key approximate inference methods for Bayesian Networks and provides comprehensive evaluation metrics to assess their accuracy and computational efficiency. The system is designed to handle both categorical and continuous variables through intelligent discretization and offers detailed performance analysis across different sample sizes.
 
 ## Features
 
